@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1259
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabratEyeTracking", "LabratEyeTracking\LabratEyeTracking.csproj", "{AEE385A2-74B3-4EB9-8B23-9EE30C518BFE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEE385A2-74B3-4EB9-8B23-9EE30C518BFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEE385A2-74B3-4EB9-8B23-9EE30C518BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEE385A2-74B3-4EB9-8B23-9EE30C518BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEE385A2-74B3-4EB9-8B23-9EE30C518BFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {66BEFCEC-4464-4379-97E7-08B25AD9F904}
+	EndGlobalSection
+EndGlobal
