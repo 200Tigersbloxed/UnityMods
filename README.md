@@ -18,10 +18,10 @@ A collection of my mods for games that run on the Unity Engine.
 
 #### Eye Trackers
 
-|SDK   |SDK Type<int>   |Unmanaged Libraries   |
+|SDK|SDK Type<int>|Unmanaged Libraries|
 |---|---|---|
-|SRanipal   |1   |[Only the DLLs](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking/LabratEyeTracking/SRanipal)   |
-|Pimax (aSeeVRClient)   |2   |[Only the DLLs](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking/LabratEyeTracking/PimaxEyeTracker)   |
+|SRanipal|1|[Only the DLLs](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking/LabratEyeTracking/SRanipal)|
+|Pimax (aSeeVRClient)|2|[Only the DLLs](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking/LabratEyeTracking/PimaxEyeTracker)|
 
 #### Info
 
@@ -34,3 +34,8 @@ Enables use of the SRanipal SDK to detect if a user has their eyes open or not.
 **NOTE:** This *only* works with the SRanipal SDK and aSeeVRClient (Pimax). Any HMDs that have eye tracking, but *don't* use the SRanipal SDK or aSeeVRClient are NOT supported.
 
 Last Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/LET-v1.1.0
+  
+#### Credits
+
++ [PimaxEyeTracker](https://github.com/NGenesis/PimaxEyeTracker) by NGenesis
++ [SRanipalTrackingInterface.cs](https://github.com/benaclejames/VRCFaceTracking/blob/master/VRCFaceTracking/SRanipalTrackingInterface.cs) by benaclejames
