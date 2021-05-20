@@ -83,6 +83,16 @@ namespace LabratEyeTracking.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] PimaxEyeTracker {
+            get {
+                object obj = ResourceManager.GetObject("PimaxEyeTracker", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] SRanipal {
             get {
                 object obj = ResourceManager.GetObject("SRanipal", resourceCulture);

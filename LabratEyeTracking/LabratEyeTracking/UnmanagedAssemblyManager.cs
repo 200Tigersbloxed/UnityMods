@@ -9,7 +9,7 @@ namespace LabratEyeTracking
     public static class UnmanagedAssemblyManager
     {
         public static string dir = Directory.GetParent(Application.dataPath).ToString();
-        public static List<string> libs = new List<string>
+        public static List<string> srLibs = new List<string>
         {
             "libHTC_License.dll",
             "nanomsg.dll",
@@ -17,36 +17,55 @@ namespace LabratEyeTracking
             "ViveSR_Client.dll",
             "SRanipal.dll"
         };
-
-        public static void Initialize()
+        public static List<string> pmLibs = new List<string>
         {
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-            foreach(string lib in libs)
+            "PimaxEyeTracker.dll"
+        };
+
+        public static void Initialize(int sdkType)
+        {
+            switch (sdkType)
             {
-                switch (lib)
-                {
-                    case "libHTC_License.dll":
-                        if (!File.Exists(Path.Combine(dir, lib)))
-                            File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.libHTC_License);
-                        break;
-                    case "nanomsg.dll":
-                        if (!File.Exists(Path.Combine(dir, lib)))
-                            File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.nanomsg);
-                        break;
-                    case "SRWorks_Log.dll":
-                        if (!File.Exists(Path.Combine(dir, lib)))
-                            File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.SRWorks_Log);
-                        break;
-                    case "ViveSR_Client.dll":
-                        if (!File.Exists(Path.Combine(dir, lib)))
-                            File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.ViveSR_Client);
-                        break;
-                    case "SRanipal.dll":
-                        if (!File.Exists(Path.Combine(dir, lib)))
-                            File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.SRanipal);
-                        break;
-                }
+                case 1:
+                    foreach (string lib in srLibs)
+                    {
+                        switch (lib)
+                        {
+                            case "libHTC_License.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.libHTC_License);
+                                break;
+                            case "nanomsg.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.nanomsg);
+                                break;
+                            case "SRWorks_Log.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.SRWorks_Log);
+                                break;
+                            case "ViveSR_Client.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.ViveSR_Client);
+                                break;
+                            case "SRanipal.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.SRanipal);
+                                break;
+                        }
+                    }
+                    break;
+                case 2:
+                    foreach(string lib in pmLibs)
+                    {
+                        switch (lib)
+                        {
+                            case "PimaxEyeTracker.dll":
+                                if (!File.Exists(Path.Combine(dir, lib)))
+                                    File.WriteAllBytes(Path.Combine(dir, lib), Properties.Resources.PimaxEyeTracker);
+                                break;
+                        }
+                    }
+                    break;
             }
         }
     }

@@ -11,6 +11,12 @@
     <Reference Include="BepInEx">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="Managed-PVR">
+      <HintPath>..\..\..\UnitySaves\pimaxETSDK\Assets\Plugins\Managed-PVR.dll</HintPath>
+    </Reference>
+    <Reference Include="SteamVR">
+      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\SteamVR.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
