@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -45,7 +45,7 @@ namespace LabratEyeTracking
         public static bool IsGameScene(Scene scene)
         {
             bool valToReturn = false;
-            if (scene.name == "Singleplayer") { valToReturn = true; }
+            if (scene.name == "Game") { valToReturn = true; }
 
             return valToReturn;
         }
