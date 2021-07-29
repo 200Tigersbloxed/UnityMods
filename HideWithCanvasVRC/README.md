@@ -16,7 +16,11 @@ HideWithCanvasVRC is a VRChat mod that allows users to hide their VRChat window 
 
 ## How to Use
 
-Simple really, all that you need to do is install the mod, and then it just works!
+1) Install [MelonLoader](https://github.com/LavaGang/MelonLoader) to VRChat (run once after install)
+2) Download the `HideWithCanvasVRC.dll` file from latest release (see Latest Release)
+    + This mod *requires* [UIExpansionKit](https://github.com/knah/VRCMods).
+3) Move the file to `[VRChat Folder]/Mods`
+4) Launch VRChat and the mod should now be installed
 
 **This mod depends on UIExpansionKit**
 
@@ -30,7 +34,7 @@ On the outside, viewers will be able to hit the **F5** button, and a sound in-ga
 
 ## Customization
 
-In the releases section, a .unitypackage is bundled with it. THis unitypackage is the "template" for the canvas. It is packaged with the AssetBundle Manager package in Unity.
+In the releases section, a .unitypackage is bundled with it. This unitypackage is the "template" for the canvas. It is packaged with the AssetBundle Manager package in Unity.
 
 You can see a guide on how to get started with customization [here](https://github.com/200Tigersbloxed/UnityMods/blob/main/HideWithCanvasVRC/CUSTOMIZATION.md)!
 
