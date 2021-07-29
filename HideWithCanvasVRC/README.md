@@ -42,4 +42,4 @@ So don't be stupid and use this mod while streaming, there's currently no stream
 
 # Latest Release
 
-You can find the latest release [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hwcv-v1.1.1)
+You can find the latest release [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hwcv-v1.0.0)
