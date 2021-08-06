@@ -17,5 +17,5 @@ using HideWithCanvasVRC;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("aa45c51a-06ad-436a-85e7-c3c0a667509e")]
-[assembly: MelonInfo(typeof(MainMelonMod), "HideWithCanvasVRC", "v1.0.0", "200Tigersbloxed")]
+[assembly: MelonInfo(typeof(MainMelonMod), "HideWithCanvasVRC", "v1.0.1", "200Tigersbloxed")]
 [assembly: MelonGame("VRChat", "VRChat")]
