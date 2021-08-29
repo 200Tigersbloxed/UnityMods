@@ -8,3 +8,4 @@ A collection of my mods for games that run on the Unity Engine.
 ## VRChat Mods
 
 + [HideWithCanvasVRC](https://github.com/200Tigersbloxed/UnityMods/tree/main/HideWithCanvasVRC)
++ [HRtoVRChat](https://github.com/200Tigersbloxed/UnityMods/tree/main/HRtoVRChat)
