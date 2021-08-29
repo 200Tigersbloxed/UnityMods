@@ -1,6 +1,6 @@
 # HRtoVRChat Avatar Setup
 
-This prefab contains contents to get started with HRtoVRChat. Please read through this **whole document** for information on everything included.
+The HRtoVRChat-Prefab (which can be found on the Latest Release Artifacts for HRtoVRChat) contains contents to get started with HRtoVRChat. Please read through this **whole document** for information on everything included.
 
 **ATTENTION**
 
