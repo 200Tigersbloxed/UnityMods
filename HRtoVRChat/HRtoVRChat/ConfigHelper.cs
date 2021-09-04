@@ -17,9 +17,9 @@ namespace HRtoVRChat
         private static void CreateConfig()
         {
             MelonPreferences.CreateCategory(myCategory);
-            MelonPreferences.CreateEntry(myCategory, "hrtype", "unknown", "hrtype", "Displays the HRType to use; see documentation.");
-            MelonPreferences.CreateEntry(myCategory, "fitbiturl", "ws://localhost:8080/", "fitbiturl", "Websocket URL to Connect to for FitbitHRtoWS.");
-            MelonPreferences.CreateEntry(myCategory, "hyperatesessionid", String.Empty, "hyperatesessionid", "SessionId for HypeRate.");
+            try { MelonPreferences.CreateEntry(myCategory, "hrtype", "unknown", "hrtype", "Displays the HRType to use; see documentation."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "fitbiturl", "ws://localhost:8080/", "fitbiturl", "Websocket URL to Connect to for FitbitHRtoWS."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "hyperatesessionid", String.Empty, "hyperatesessionid", "SessionId for HypeRate."); } catch (Exception) { }
             LogHelper.Log("ConfigHelper", "Created Config!");
         }
 

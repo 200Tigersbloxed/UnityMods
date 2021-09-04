@@ -2,77 +2,52 @@
 
 namespace HRtoVRChat.HRManagers
 {
-    public static class HypeRateManager
+    public class HypeRateManager : HRManager
     {
-        public static HeartRate hypeRate;
-        public static bool IsSubscribed = false;
+        public HeartRate hypeRate;
 
-        public static void Initialize(string sessionId)
+        public bool Init(string sessionId)
         {
             if (hypeRate == null)
             {
                 hypeRate = new HeartRate(sessionId);
                 LogHelper.Log("HypeRateManager", "HypeRate Initialized!");
+                Subscribe();
+                return true;
             }
             else
                 LogHelper.Warn("HypeRateManager", "hypeRate already initialized! Please Unsubscribe() then Dispose() before continuing!");
+            return false;
         }
 
-        public static void Subscribe()
+        private void Subscribe()
         {
             if (hypeRate != null)
             {
-                if (!IsSubscribed)
-                {
-                    hypeRate.Subscribe();
-                    LogHelper.Log("HypeRateManager", "Subscribed to HypeRate Data!");
-                }
-                else
-                    LogHelper.Warn("HypeRateManager", "hypeRate is already Subscribed! Did you mean to Unsubscribe?");
+                hypeRate.Subscribe();
+                LogHelper.Log("HypeRateManager", "Subscribed to HypeRate Data!");
             }
             else
                 LogHelper.Warn("HypeRateManager", "hypeRate is null! Did you Initialize()?");
         }
 
-        public static int GetHR()
+        public int GetHR()
         {
             int iTR = 0;
             if (hypeRate != null)
             {
-                if (IsSubscribed)
-                {
-                    iTR = hypeRate.HR;
-                }
+                iTR = hypeRate.HR;
             }
 
             return iTR;
         }
 
-        public static void Unsubscribe()
+        public void Stop()
         {
             if (hypeRate != null)
             {
-                if (IsSubscribed)
-                {
-                    hypeRate.Unsubscribe();
-                    LogHelper.Log("HypeRateManager", "Unsubscribed from HypeRate Data!");
-                }
-                else
-                    LogHelper.Warn("HypeRateManager", "hypeRate is not Subscribed! Subscribe() first!");
-            }
-            else
-                LogHelper.Warn("HypeRateManager", "hypeRate is null! Did you Initialize()?");
-        }
-
-        public static void Dispose()
-        {
-            if (hypeRate != null)
-            {
-                if (IsSubscribed)
-                {
-                    hypeRate.Unsubscribe();
-                    LogHelper.Log("HypeRateManager", "Unsubscribed from HypeRate Data!");
-                }
+                hypeRate.Unsubscribe();
+                LogHelper.Log("HypeRateManager", "Unsubscribed from HypeRate Data!");
                 hypeRate = null;
                 LogHelper.Log("HypeRateManager", "HypeRate disposed!");
             }

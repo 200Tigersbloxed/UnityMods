@@ -18,5 +18,5 @@ using HRtoVRChat;
 
 [assembly: Guid("e60e13d3-e714-4d88-af0d-7df285f13178")]
 
-[assembly: MelonInfo(typeof(MainMod), "HRtoVRChat", "v1.0.0", "200Tigersbloxed")]
+[assembly: MelonInfo(typeof(MainMod), "HRtoVRChat", "v1.1.0", "200Tigersbloxed")]
 [assembly: MelonGame("VRChat", "VRChat")]

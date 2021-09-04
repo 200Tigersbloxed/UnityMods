@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,7 +9,7 @@
       <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="HypeRate.NET">
-      <HintPath>..\..\HypeRate.NET\HypeRate.NET\bin\Debug\net472\HypeRate.NET.dll</HintPath>
+      <HintPath>..\..\..\ILMerge\output\HypeRate.NET.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
@@ -31,9 +31,6 @@
     </Reference>
     <Reference Include="VRCSDK3A">
       <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCSDK3A.dll</HintPath>
-    </Reference>
-    <Reference Include="websocket-sharp">
-      <HintPath>..\..\HypeRate.NET\HypeRate.NET\bin\Release\net48\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
 

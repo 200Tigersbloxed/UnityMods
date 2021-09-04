@@ -1,52 +1,65 @@
 ﻿using System;
 using WebSocketSharp;
+using System.Collections;
+using MelonLoader;
+using UnityEngine;
 
 namespace HRtoVRChat.HRManagers
 {
-    public static class FitbitManager
+    public class FitbitManager : HRManager
     {
-        public static WebSocket ws = null;
-        public static bool FitbitIsConnected = false;
-        public static int HR = 0;
+        private WebSocket ws = null;
+        public bool FitbitIsConnected { get; private set; } = false;
+        public int HR { get; private set; } = 0;
 
-        public static void Initialize(string url)
+        public bool isConnected { get; private set; }
+
+        public bool Init(string url)
         {
-            if (ws == null)
+            if(ws != null)
             {
-                ws = new WebSocket(url);
-                ws.OnMessage += OnMessage;
-                ws.Connect();
-                LogHelper.Log("FitbitManager", "WebSocket Initialized!");
+                Close();
             }
-            else
-                LogHelper.Warn("FitbitManager", "WebSocket is not null! Did you mean to Close or Dispose?");
+            ws = new WebSocket(url);
+            ws.OnOpen += Ws_OnOpen;
+            ws.OnMessage += OnMessage;
+            ws.OnClose += Ws_OnClose;
+            ws.Connect();
+            if (!ws.IsAlive)
+                return false;
+            MelonCoroutines.Start(waitSeconds());
+            LogHelper.Log("FitbitManager", "WebSocket Initialized!");
+            return ws.IsAlive;
         }
 
-        private static void Open()
+        IEnumerator waitSeconds()
         {
-            if (ws != null)
-                if (!ws.IsAlive)
-                    ws.Connect();
-                else
-                    LogHelper.Warn("FitbitManager", "WebSocket is already alive! Did you mean to Close()?");
-            LogHelper.Warn("FitbitManager", "WebSocket is null! Did you mean to Initialize()?");
+            yield return new WaitForSeconds(1);
+            if (isConnected)
+            {
+                getHRMessage();
+                getFitbitConnectionMessage();
+                MelonCoroutines.Start(waitSeconds());
+            }
         }
 
-        public static void getHRMessage()
+        private void getHRMessage()
         {
             if(ws != null)
                 if (ws.IsAlive)
                     ws.Send("getHR");
         }
 
-        public static void getFitbitConnectionMessage()
+        private void getFitbitConnectionMessage()
         {
             if (ws != null)
                 if (ws.IsAlive)
                     ws.Send("checkFitbitConnection");
         }
 
-        public static void Close()
+        public int GetHR() => HR;
+
+        private void Close()
         {
             if (ws != null)
                 if (ws.IsAlive)
@@ -57,21 +70,21 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Warn("FitbitManager", "WebSocket is null! Did you mean to Initialize()?");
         }
 
-        public static void Dispose(bool closeAutomatically = false)
+        public void Stop()
         {
             if (ws != null)
                 if (ws.IsAlive)
-                    if (closeAutomatically)
-                        ws.Close();
-                    else
-                        LogHelper.Warn("FitbitManager", "WebSocket is not closed! Override closeAutomatically to true or call Close() then run Dispose() again!");
+                {
+                    Close();
+                    ws = null;
+                }
                 else
                     ws = null;
             else
                 LogHelper.Warn("FitbitManager", "WebSocket is already null! Did you mean to Initialize()?");
         }
 
-        private static void OnMessage(object sender, MessageEventArgs e)
+        private void OnMessage(object sender, MessageEventArgs e)
         {
             switch (e.Data.ToLower())
             {
@@ -87,5 +100,8 @@ namespace HRtoVRChat.HRManagers
                     break;
             }
         }
+
+        private void Ws_OnOpen(object sender, EventArgs e) => isConnected = true;
+        private void Ws_OnClose(object sender, CloseEventArgs e) => isConnected = false;
     }
 }

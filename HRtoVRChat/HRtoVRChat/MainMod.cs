@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 using MelonLoader;
 using UnityEngine;
 
@@ -9,7 +10,9 @@ namespace HRtoVRChat
     public class MainMod : MelonMod
     {
         private static HRType hrType = HRType.Unknown;
+        private static HRManager activeHRManager = null;
         private bool UpdateIENum = true;
+        private bool isRestarting = false;
 
         public static Action<int, int, int> OnHRValuesUpdated = (ones, tens, hundreds) => { };
 
@@ -23,6 +26,11 @@ namespace HRtoVRChat
         public override void OnApplicationLateStart()
         {
             LogHelper.Log("MainMod", "Starting HRtoVRChat!");
+            // Mod Support
+            // Still have some issues to Fix, see UIX.cs
+            //int uixSupported = 0;
+            //try { uixSupported = ModSupport.UIX.Init(new Action(delegate () { RestartHRListener(); })); } catch (Exception) { LogHelper.Error("MainMod", "Failed to load UIX!"); }
+            // Start everything else
             Start();
             // based, red-pilled
             base.OnApplicationLateStart();
@@ -72,6 +80,23 @@ namespace HRtoVRChat
             ParamsManager.Parameters.Clear();
         }
 
+        private void RestartHRListener()
+        {
+            if (!isRestarting)
+            {
+                isRestarting = true;
+                // Called for when you need to Reset the HRListener
+                StopHRListener();
+                IEnumerator waitNumerator()
+                {
+                    yield return new WaitForSeconds(2);
+                    isRestarting = false;
+                    StartHRListener();
+                }
+                MelonCoroutines.Start(waitNumerator());
+            }
+        }
+
         private static HRType StringToHRType(string input)
         {
             HRType hrt = HRType.Unknown;
@@ -93,11 +118,12 @@ namespace HRtoVRChat
             switch (hrType)
             {
                 case HRType.FitbitHRtoWS:
-                    HRManagers.FitbitManager.Initialize(ConfigHelper.LoadedConfig.fitbitURL);
+                    activeHRManager = new HRManagers.FitbitManager();
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.fitbitURL);
                     break;
                 case HRType.HypeRate:
-                    HRManagers.HypeRateManager.Initialize(ConfigHelper.LoadedConfig.hyperateSessionId);
-                    HRManagers.HypeRateManager.Subscribe();
+                    activeHRManager = new HRManagers.HypeRateManager();
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.hyperateSessionId);
                     break;
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
@@ -107,46 +133,21 @@ namespace HRtoVRChat
 
         private static void StopHRListener()
         {
-            switch (hrType)
+            if(activeHRManager != null)
             {
-                case HRType.FitbitHRtoWS:
-                    HRManagers.FitbitManager.Close();
-                    HRManagers.FitbitManager.Dispose();
-                    break;
-                case HRType.HypeRate:
-                    HRManagers.HypeRateManager.Unsubscribe();
-                    HRManagers.HypeRateManager.Dispose();
-                    break;
+                activeHRManager.Stop();
             }
         }
 
         IEnumerator BoopUwU()
         {
             // Get HR
-            int HR = GetHR();
+            int HR = activeHRManager.GetHR();
             // Cast to currentHRSplit
             currentHRSplit chs = intToHRSplit(HR);
             OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds);
             yield return new WaitForSeconds(1);
             if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
-        }
-
-        private int GetHR()
-        {
-            int hrToReturn = 0;
-            switch (hrType)
-            {
-                case HRType.FitbitHRtoWS:
-                    HRManagers.FitbitManager.getHRMessage();
-                    HRManagers.FitbitManager.getFitbitConnectionMessage();
-                    hrToReturn = HRManagers.FitbitManager.HR;
-                    break;
-                case HRType.HypeRate:
-                    hrToReturn = HRManagers.HypeRateManager.GetHR();
-                    break;
-            }
-
-            return hrToReturn;
         }
 
         private currentHRSplit intToHRSplit(int hr)
