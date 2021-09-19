@@ -6,6 +6,13 @@
 
 HRtoVRChat allows you to send your Heart Rate into VRChat via. Expression Parameters. HRtoVRChat only uses 3 int parameters, as to not require to use a bunch of storage. (see parameters section)
 
+## Dependencies
+
+Please make sure all the mods in the list are installed before continuing.
+
++ [VRCUtilityKit](https://github.com/loukylor/VRC-Mods#vrchatutilitykit)
+  + Also found on [VRCMelonAssistant](https://github.com/knah/VRCMelonAssistant)
+
 ## Installing
 
 1) Download and Install the latest release of [MelonLoader](https://github.com/LavaGang/MelonLoader/releases) to VRChat (see warning section)
@@ -62,4 +69,4 @@ So please don't complain to me when you get banned for having your Heart Rate sh
 
 # Latest Release
 
-Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.1.0) for the latest release
+Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.2.0) for the latest release
