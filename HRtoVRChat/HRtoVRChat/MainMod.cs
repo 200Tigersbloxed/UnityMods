@@ -109,8 +109,6 @@ namespace HRtoVRChat
 
         private void Start()
         {
-            // Start Manager based on Config
-            hrType = StringToHRType(ConfigHelper.LoadedConfig.hrType);
             StartHRListener();
             // Start Coroutine
             MelonCoroutines.Start(BoopUwU());
@@ -149,15 +147,6 @@ namespace HRtoVRChat
                     isRestarting = false;
                     StartHRListener();
                 });
-                /*
-                IEnumerator waitNumerator()
-                {
-                    yield return new WaitForSeconds(2);
-                    isRestarting = false;
-                    StartHRListener();
-                }
-                MelonCoroutines.Start(waitNumerator());
-                */
             }
         }
 
@@ -179,7 +168,10 @@ namespace HRtoVRChat
 
         private static void StartHRListener()
         {
-            if(activeHRManager != null)
+            // Start Manager based on Config
+            hrType = StringToHRType(ConfigHelper.LoadedConfig.hrType);
+            // Check activeHRManager
+            if (activeHRManager != null)
                 if (activeHRManager.IsOpen())
                 {
                     LogHelper.Warn("MainMod", "HRListener is currently active! Stop it first");

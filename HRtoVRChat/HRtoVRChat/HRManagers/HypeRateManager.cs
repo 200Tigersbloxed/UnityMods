@@ -55,6 +55,12 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Warn("HypeRateManager", "hypeRate is already Disposed! Did you mean to Initialize()?");
         }
 
-        public bool IsOpen() => hypeRate.isSubscribed;
+        public bool IsOpen()
+        {
+            if (hypeRate != null)
+                return hypeRate.isSubscribed;
+            else
+                return false;
+        }
     }
 }
