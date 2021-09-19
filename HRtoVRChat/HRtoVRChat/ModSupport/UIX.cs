@@ -10,6 +10,7 @@ namespace HRtoVRChat.ModSupport
 {
     public static class UIX
     {
+        /*
         public static int Init(Action buttonAction)
         {
             // Create UIX Button if we have UIX
@@ -19,20 +20,12 @@ namespace HRtoVRChat.ModSupport
             {
                 LogHelper.Log("ModSupport.UIX", "Found UIExpansionKit!");
                 MethodBase gemMethod = MelonHandler.Mods[uixIndex].Assembly.GetType("UIExpansionKit.API.ExpansionKitApi").GetMethod("GetExpandedMenu", BindingFlags.Static | BindingFlags.Public);
-                // Enums
-                Type enumType = MelonHandler.Mods[uixIndex].Assembly.GetType("UIExpansionKit.API.ExpandedMenu");
-                object[] enumValues = Enum.GetValues(enumType).Cast<object>().ToArray();
-                Type underlyingType = Enum.GetUnderlyingType(enumType);
                 // Return Objects
                 object gemReturnObject = null;
                 object asbReturnObject = null;
                 // Parameters
-                object[] gemParameters = new object[1];
-                gemParameters[0] = Convert.ChangeType(enumValues[0], underlyingType);
-                object[] asbParameters = new object[3];
-                asbParameters[0] = "Restart HRListener";
-                asbParameters[1] = buttonAction;
-                asbParameters[2] = null;
+                object[] gemParameters = new object[gemMethod.GetParameters().Length];
+                gemParameters[0] = 0;
                 // Get Return Method
                 object returnValue = gemMethod.Invoke(gemReturnObject, gemParameters);
                 MethodBase asbMethod = null;
@@ -45,6 +38,11 @@ namespace HRtoVRChat.ModSupport
                     LogHelper.Error("ModSupport.UIX", "Failed to GetExpandedMenu return!");
                     return 2;
                 }
+                
+                object[] asbParameters = new object[asbMethod.GetParameters().Length];
+                asbParameters[0] = "Restart HRListener";
+                asbParameters[1] = buttonAction;
+                asbParameters[2] = null;
                 // Invoke Return Method
                 if (asbMethod != null)
                     asbMethod.Invoke(asbReturnObject, asbParameters);
@@ -61,6 +59,68 @@ namespace HRtoVRChat.ModSupport
             }
 
             return 0;
+        }
+        */
+
+        public static int Init(Action buttonAction)
+        {
+            int status = 0;
+            int uixIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "UI Expansion Kit");
+            if(uixIndex != -1)
+            {
+                LogHelper.Debug("ModSupport.UIX", "Found UIX!");
+                MethodBase gemMethod = MelonHandler.Mods[uixIndex].Assembly.GetType("UIExpansionKit.API.ExpansionKitApi").GetMethod("GetExpandedMenu", BindingFlags.Static | BindingFlags.Public);
+                if(gemMethod != null)
+                {
+                    object[] gemParams = new object[gemMethod.GetParameters().Length];
+                    gemParams[0] = 0;
+                    object objASB = gemMethod.Invoke(null, gemParams);
+                    if (objASB != null)
+                    {
+                        MethodBase asbMethod = objASB.GetType().GetMethod("AddSimpleButton",
+                            BindingFlags.Instance | BindingFlags.Public,
+                            null,
+                            new[] { typeof(string), typeof(Action), typeof(Action<UnityEngine.GameObject>) },
+                            null);
+                        if(asbMethod != null)
+                        {
+                            var asbReturnValue = default(object);
+                            object[] asbParameters = new object[asbMethod.GetParameters().Length];
+                            asbParameters[0] = "RestartHRListener";
+                            asbParameters[1] = buttonAction;
+                            asbParameters[2] = null;
+                            try { asbReturnValue = asbMethod.Invoke(objASB, asbParameters); }
+                            catch (Exception e)
+                            {
+                                LogHelper.Error("ModSupport.UIX", "asbMethod failed to invoke! Exception: " + e);
+                                status = 5;
+                            }
+                        }
+                        else
+                        {
+                            LogHelper.Error("ModSupport.UIX", "asbMethod returned null!");
+                            status = 4;
+                        }
+                    }
+                    else
+                    {
+                        LogHelper.Error("ModSupport.UIX", "GetExpandedMenu returned null!");
+                        status = 3;
+                    }
+                }
+                else
+                {
+                    LogHelper.Error("ModSupport.UIX", "Could not find GetExpandedMenu method!");
+                    status = 2;
+                }
+            }
+            else
+            {
+                LogHelper.Error("ModSupport.UIX", "Failed to find UIX!");
+                status = 1;
+            }
+
+            return status;
         }
     }
 }

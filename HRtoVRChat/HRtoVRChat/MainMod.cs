@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using System.Reflection;
 using MelonLoader;
 using UnityEngine;
+using VRC.SDKBase;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace HRtoVRChat
 {
@@ -23,17 +25,67 @@ namespace HRtoVRChat
             public int hundreds = 0;
         }
 
+        private void LogSupportedMod(string modName, int result)
+        {
+            if (result == 0)
+                LogHelper.Log("MainMod", $"{modName} loaded!");
+            else
+                LogHelper.Error("MainMod", $"Failed to load mod {modName}!");
+        }
+
         public override void OnApplicationLateStart()
         {
             LogHelper.Log("MainMod", "Starting HRtoVRChat!");
+            // Get Config
+            ConfigHelper.Config lc = ConfigHelper.LoadConfig();
+            // AssetBundles
+            AssetManager.Init();
             // Mod Support
-            // Still have some issues to Fix, see UIX.cs
-            //int uixSupported = 0;
-            //try { uixSupported = ModSupport.UIX.Init(new Action(delegate () { RestartHRListener(); })); } catch (Exception) { LogHelper.Error("MainMod", "Failed to load UIX!"); }
+            if (ConfigHelper.LoadedConfig.UIXSupport)
+            {
+                int uixSupported = ModSupport.UIX.Init(new Action(delegate () { RestartHRListener(); }));
+                LogSupportedMod("UI Expansion Kit", uixSupported);
+            }
+            if (ConfigHelper.LoadedConfig.AMAPISupport)
+            {
+                List<ModSupport.AMAPI.NewButton> nbList = new List<ModSupport.AMAPI.NewButton>
+                {
+                    new ModSupport.AMAPI.NewButton
+                    {
+                        buttonText = "RestartHR",
+                        buttonAction = new Action(delegate(){ RestartHRListener(); }),
+                        texture = AssetManager.loadedAssets.heartbeat
+                    },
+                    new ModSupport.AMAPI.NewButton
+                    {
+                        buttonText = "StartHR",
+                        buttonAction = new Action(delegate(){ StartHRListener(); }),
+                        texture = AssetManager.loadedAssets.go
+                    },
+                    new ModSupport.AMAPI.NewButton
+                    {
+                        buttonText = "StopHR",
+                        buttonAction = new Action(delegate(){ StopHRListener(); }),
+                        texture = AssetManager.loadedAssets.stop
+                    }
+                };
+                int amapiSupported = ModSupport.AMAPI.Init(nbList, AssetManager.loadedAssets.heartbeat);
+                LogSupportedMod("ActionMenuApi", amapiSupported);
+            }
+            VRChatUtilityKit.Utilities.NetworkEvents.OnAvatarInstantiated += NetworkEvents_OnAvatarInstantiated;
             // Start everything else
             Start();
             // based, red-pilled
             base.OnApplicationLateStart();
+        }
+
+        private void NetworkEvents_OnAvatarInstantiated(VRCAvatarManager arg1, VRC.Core.ApiAvatar arg2, GameObject arg3)
+        {
+            VRCPlayerApi papi = arg1.field_Private_VRCPlayer_0.prop_VRCPlayerApi_0;
+            LogHelper.Debug("MainMod", "Avatar Instantiated : " + papi.isLocal);
+            if(papi.isLocal)
+                foreach(ParamsManager.IntParameter param in ParamsManager.Parameters)
+                    param.ResetParam();
         }
 
         public override void OnApplicationQuit()
@@ -46,20 +98,19 @@ namespace HRtoVRChat
 
         public override void OnPreferencesSaved()
         {
+            // Get Config
+            ConfigHelper.Config lc = ConfigHelper.LoadConfig();
             // Restart and read new config
             LogHelper.Log("MainMod", "Restarting HRtoVRChat!");
-            Stop();
-            Start();
+            RestartHRListener();
             // based, red-pilled
             base.OnPreferencesSaved();
         }
 
         private void Start()
         {
-            // Get Config
-            ConfigHelper.Config lc = ConfigHelper.LoadConfig();
             // Start Manager based on Config
-            hrType = StringToHRType(lc.hrType);
+            hrType = StringToHRType(ConfigHelper.LoadedConfig.hrType);
             StartHRListener();
             // Start Coroutine
             MelonCoroutines.Start(BoopUwU());
@@ -82,11 +133,23 @@ namespace HRtoVRChat
 
         private void RestartHRListener()
         {
+            int loops = 0;
             if (!isRestarting)
             {
                 isRestarting = true;
                 // Called for when you need to Reset the HRListener
                 StopHRListener();
+                Task.Factory.StartNew(() =>
+                {
+                    while(loops <= 2)
+                    {
+                        Task.Delay(1000);
+                        loops++;
+                    }
+                    isRestarting = false;
+                    StartHRListener();
+                });
+                /*
                 IEnumerator waitNumerator()
                 {
                     yield return new WaitForSeconds(2);
@@ -94,6 +157,7 @@ namespace HRtoVRChat
                     StartHRListener();
                 }
                 MelonCoroutines.Start(waitNumerator());
+                */
             }
         }
 
@@ -115,6 +179,12 @@ namespace HRtoVRChat
 
         private static void StartHRListener()
         {
+            if(activeHRManager != null)
+                if (activeHRManager.IsOpen())
+                {
+                    LogHelper.Warn("MainMod", "HRListener is currently active! Stop it first");
+                    return;
+                }
             switch (hrType)
             {
                 case HRType.FitbitHRtoWS:
@@ -135,6 +205,11 @@ namespace HRtoVRChat
         {
             if(activeHRManager != null)
             {
+                if (!activeHRManager.IsOpen())
+                {
+                    LogHelper.Warn("MainMod", "HRListener is currently inactive! Start it first!");
+                    return;
+                }
                 activeHRManager.Stop();
             }
         }

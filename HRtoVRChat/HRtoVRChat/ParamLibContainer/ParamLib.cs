@@ -16,30 +16,32 @@ namespace ParamLib
             .field_Internal_Static_VRCPlayer_0
             ?.field_Private_AnimatorControllerManager_0?.field_Private_AvatarAnimParamController_0;
 
+        private static readonly MethodInfo PrioritizeMethod = typeof(AvatarPlayableController).GetMethods().Where(info =>
+                info.Name.Contains("Method") && !info.Name.Contains("PDM") && info.Name.Contains("Public")
+                && info.GetParameters().Length == 1 && info.Name.Contains("Int32") &&
+                info.ReturnType == typeof(void))
+            .First(method => XrefScanner.UsedBy(method).Any(xrefs =>
+                XrefScanner.UsedBy(xrefs.TryResolve()).Any(i => i.TryResolve().Name == "OnEnable")));
+
         private static readonly MethodInfo SetMethod = typeof(AvatarPlayableController).GetMethods().First(m =>
             m.Name.Contains("Boolean_Int32_Single") &&
             XrefScanner.UsedBy(m).All(inst => inst.Type == XrefType.Method && inst.TryResolve()?.DeclaringType == typeof(AvatarPlayableController)));
 
-        private static readonly MethodInfo PrioritizeMethod = typeof(AvatarPlayableController).GetMethods().First(m =>
-            m.Name.Contains("Void_Int32") &&
-            XrefScanner.UsedBy(m).Any(inst => inst.Type == XrefType.Method && inst.TryResolve()?.DeclaringType == typeof(ActionMenu)));
-
         public static void PrioritizeParameter(int paramIndex)
         {
-            var controller = LocalPlayableController;
-            if (controller == null) return;
+            if (LocalPlayableController == null) return;
 
-            PrioritizeMethod.Invoke(controller, new object[] { paramIndex });
+            PrioritizeMethod.Invoke(LocalPlayableController, new object[] { paramIndex });
         }
 
-        public static (int, VRCExpressionParameters.Parameter) FindParam(string paramName, VRCExpressionParameters.ValueType paramType)
+        public static (int?, VRCExpressionParameters.Parameter) FindParam(string paramName, VRCExpressionParameters.ValueType paramType)
         {
             VRCExpressionParameters.Parameter[] parameters = VRCPlayer.field_Internal_Static_VRCPlayer_0
                 ?.prop_VRCAvatarManager_0?.prop_VRCAvatarDescriptor_0?.expressionParameters
                 ?.parameters;
 
             if (parameters == null)
-                return (-1, null);
+                return (null, null);
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -48,15 +50,14 @@ namespace ParamLib
                 if (param.name == paramName && param.valueType == paramType) return (i, parameters[i]);
             }
 
-            return (-1, null);
+            return (null, null);
         }
 
         public static bool SetParameter(int paramIndex, float value)
         {
-            var controller = LocalAnimParamController;
-            if (controller?.field_Private_AvatarPlayableController_0 == null) return false;
+            if (LocalAnimParamController?.field_Private_AvatarPlayableController_0 == null) return false;
 
-            SetMethod.Invoke(controller.field_Private_AvatarPlayableController_0, new object[] { paramIndex, value });
+            SetMethod.Invoke(LocalAnimParamController.field_Private_AvatarPlayableController_0, new object[] { paramIndex, value });
             return true;
         }
     }

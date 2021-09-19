@@ -8,9 +8,9 @@ namespace HRtoVRChat
     {
         public static List<IntParameter> Parameters = new List<IntParameter>() { };
 
-        public class IntParameter
+        public class IntParameter : ParamLib.IntBaseParam
         {
-            public IntParameter(Func<HROutput, int> getVal, string parameterName)
+            public IntParameter(Func<HROutput, int> getVal, string parameterName) : base(paramName: parameterName)
             {
                 LogHelper.Debug("ParamsManager", $"IntParameter with ParameterName: {parameterName}, has been created!");
                 MainMod.OnHRValuesUpdated += (ones, tens, hundreds) =>
@@ -21,17 +21,8 @@ namespace HRtoVRChat
                         tens = tens,
                         hundreds = hundreds
                     };
-                    // Find index
-                    (int, VRC.SDK3.Avatars.ScriptableObjects.VRCExpressionParameters.Parameter) foundParameter = 
-                    ParamLib.ParamLib.FindParam(parameterName, VRC.SDK3.Avatars.ScriptableObjects.VRCExpressionParameters.ValueType.Int);
-                    if(foundParameter.Item2 != null)
-                    {
-                        int valToSet = getVal.Invoke(hro);
-                        // Set parameter
-                        bool setValue = ParamLib.ParamLib.SetParameter(foundParameter.Item1, valToSet);
-                        if (!setValue)
-                            LogHelper.Error("ParamsManager", $"Failed to set Parameter {parameterName} to value {valToSet}!");
-                    }
+                    int valueToSet = getVal.Invoke(hro);
+                    ParamValue = valueToSet;
                 };
             }
         }

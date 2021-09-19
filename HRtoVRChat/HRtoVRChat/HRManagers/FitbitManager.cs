@@ -84,6 +84,8 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Warn("FitbitManager", "WebSocket is already null! Did you mean to Initialize()?");
         }
 
+        public bool IsOpen() => isConnected;
+
         private void OnMessage(object sender, MessageEventArgs e)
         {
             switch (e.Data.ToLower())
