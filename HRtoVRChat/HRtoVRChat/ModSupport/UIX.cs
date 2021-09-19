@@ -10,63 +10,13 @@ namespace HRtoVRChat.ModSupport
 {
     public static class UIX
     {
-        /*
-        public static int Init(Action buttonAction)
-        {
-            // Create UIX Button if we have UIX
-            int uixIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "UI Expansion Kit");
-            bool foundUIX = uixIndex != -1;
-            if (foundUIX)
-            {
-                LogHelper.Log("ModSupport.UIX", "Found UIExpansionKit!");
-                MethodBase gemMethod = MelonHandler.Mods[uixIndex].Assembly.GetType("UIExpansionKit.API.ExpansionKitApi").GetMethod("GetExpandedMenu", BindingFlags.Static | BindingFlags.Public);
-                // Return Objects
-                object gemReturnObject = null;
-                object asbReturnObject = null;
-                // Parameters
-                object[] gemParameters = new object[gemMethod.GetParameters().Length];
-                gemParameters[0] = 0;
-                // Get Return Method
-                object returnValue = gemMethod.Invoke(gemReturnObject, gemParameters);
-                MethodBase asbMethod = null;
-                if (returnValue != null)
-                    asbMethod = returnValue.GetType().GetMethod("AddSimpleButton");
-                else if (gemReturnObject != null)
-                    asbMethod = gemReturnObject.GetType().GetMethod("AddSimpleButton");
-                else
-                {
-                    LogHelper.Error("ModSupport.UIX", "Failed to GetExpandedMenu return!");
-                    return 2;
-                }
-                
-                object[] asbParameters = new object[asbMethod.GetParameters().Length];
-                asbParameters[0] = "Restart HRListener";
-                asbParameters[1] = buttonAction;
-                asbParameters[2] = null;
-                // Invoke Return Method
-                if (asbMethod != null)
-                    asbMethod.Invoke(asbReturnObject, asbParameters);
-                else
-                {
-                    LogHelper.Error("ModSupport.UIX", "Failed to AddSimpleButton!");
-                    return 3;
-                }
-            }
-            else
-            {
-                LogHelper.Warn("ModSupport.UIX", "Could not find UIExpansionKit! This is a helpful tool, you should think about installing it!");
-                return 1;
-            }
-
-            return 0;
-        }
-        */
-
         public static int Init(Action buttonAction)
         {
             int status = 0;
-            int uixIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "UI Expansion Kit");
-            if(uixIndex != -1)
+            int uixIndex = -1;
+            try { uixIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "UI Expansion Kit"); }
+            catch (Exception) { }
+            if(uixIndex >= 0)
             {
                 LogHelper.Debug("ModSupport.UIX", "Found UIX!");
                 MethodBase gemMethod = MelonHandler.Mods[uixIndex].Assembly.GetType("UIExpansionKit.API.ExpansionKitApi").GetMethod("GetExpandedMenu", BindingFlags.Static | BindingFlags.Public);

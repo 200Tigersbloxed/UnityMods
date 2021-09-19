@@ -21,8 +21,10 @@ namespace HRtoVRChat.ModSupport
         public static int Init(List<NewButton> nbList, Texture2D submenutexture)
         {
             int status = 0;
-            int amapiIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "ActionMenuApi");
-            if(status != -1)
+            int amapiIndex = -1;
+            try { amapiIndex = MelonHandler.Mods.FindIndex(mm => mm.Info.Name == "ActionMenuApi"); }
+            catch (Exception) { }
+            if(amapiIndex >= 0)
             {
                 // 4
                 LogHelper.Debug("ModSupport.AMAPI", "Found ActionMenuApi!");
