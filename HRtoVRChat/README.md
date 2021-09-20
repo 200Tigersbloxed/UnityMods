@@ -1,6 +1,6 @@
 # HRtoVRChat
 
-*Send you HeartRate into VRChat as a Parameter*
+*Send your HeartRate into VRChat as a Parameter*
 
 ## Info
 
