@@ -6,6 +6,8 @@ using UnityEngine;
 using VRC.SDKBase;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
+using UnhollowerBaseLib;
 
 namespace HRtoVRChat
 {
@@ -16,7 +18,9 @@ namespace HRtoVRChat
         private bool UpdateIENum = true;
         private bool isRestarting = false;
 
-        public static Action<int, int, int> OnHRValuesUpdated = (ones, tens, hundreds) => { };
+        public static Action<int, int, int, bool> OnHRValuesUpdated = (ones, tens, hundreds, isConnected) => { };
+        public static Action<bool> OnHeartBeatUpdate = (isHeartBeat) => { };
+        public static bool isHeartBeat { get; private set; } = false;
 
         private class currentHRSplit
         {
@@ -54,7 +58,7 @@ namespace HRtoVRChat
                     {
                         buttonText = "RestartHR",
                         buttonAction = new Action(delegate(){ RestartHRListener(); }),
-                        texture = AssetManager.loadedAssets.heartbeat
+                        texture = AssetManager.loadedAssets.refresh
                     },
                     new ModSupport.AMAPI.NewButton
                     {
@@ -84,7 +88,7 @@ namespace HRtoVRChat
             VRCPlayerApi papi = arg1.field_Private_VRCPlayer_0.prop_VRCPlayerApi_0;
             LogHelper.Debug("MainMod", "Avatar Instantiated : " + papi.isLocal);
             if(papi.isLocal)
-                foreach(ParamsManager.IntParameter param in ParamsManager.Parameters)
+                foreach(ParamsManager.HRParameter param in ParamsManager.Parameters)
                     param.ResetParam();
         }
 
@@ -112,10 +116,7 @@ namespace HRtoVRChat
             StartHRListener();
             // Start Coroutine
             MelonCoroutines.Start(BoopUwU());
-            // Create IntParameters
-            ParamsManager.Parameters.Add(new ParamsManager.IntParameter(hro => hro.ones, "onesHR"));
-            ParamsManager.Parameters.Add(new ParamsManager.IntParameter(hro => hro.tens, "tensHR"));
-            ParamsManager.Parameters.Add(new ParamsManager.IntParameter(hro => hro.hundreds, "hundredsHR"));
+            MelonCoroutines.Start(HeartBeat());
         }
 
         private void Stop()
@@ -161,6 +162,12 @@ namespace HRtoVRChat
                 case "hyperate":
                     hrt = HRType.HypeRate;
                     break;
+                case "pulsoid":
+                    hrt = HRType.Pulsoid;
+                    break;
+                case "textfile":
+                    hrt = HRType.TextFile;
+                    break;
             }
 
             return hrt;
@@ -172,7 +179,7 @@ namespace HRtoVRChat
             hrType = StringToHRType(ConfigHelper.LoadedConfig.hrType);
             // Check activeHRManager
             if (activeHRManager != null)
-                if (activeHRManager.IsOpen())
+                if (activeHRManager.IsActive())
                 {
                     LogHelper.Warn("MainMod", "HRListener is currently active! Stop it first");
                     return;
@@ -187,6 +194,14 @@ namespace HRtoVRChat
                     activeHRManager = new HRManagers.HypeRateManager();
                     activeHRManager.Init(ConfigHelper.LoadedConfig.hyperateSessionId);
                     break;
+                case HRType.Pulsoid:
+                    activeHRManager = new HRManagers.PulsoidManager();
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.pulsoidfeed);
+                    break;
+                case HRType.TextFile:
+                    activeHRManager = new HRManagers.TextFileManager();
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.textfilelocation);
+                    break;
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
                     break;
@@ -195,26 +210,70 @@ namespace HRtoVRChat
 
         private static void StopHRListener()
         {
-            if(activeHRManager != null)
+            if (activeHRManager != null)
             {
-                if (!activeHRManager.IsOpen())
+                if (!activeHRManager.IsActive())
                 {
                     LogHelper.Warn("MainMod", "HRListener is currently inactive! Start it first!");
                     return;
                 }
                 activeHRManager.Stop();
             }
+            activeHRManager = null;
         }
 
         IEnumerator BoopUwU()
         {
             // Get HR
-            int HR = activeHRManager.GetHR();
-            // Cast to currentHRSplit
-            currentHRSplit chs = intToHRSplit(HR);
-            OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds);
+            if(activeHRManager != null)
+            {
+                bool isOpen = activeHRManager.IsOpen();
+                int HR = activeHRManager.GetHR();
+                // Cast to currentHRSplit
+                currentHRSplit chs = intToHRSplit(HR);
+                OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, isOpen);
+            }
             yield return new WaitForSeconds(1);
             if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
+        }
+
+        IEnumerator HeartBeat()
+        {
+            if(activeHRManager != null)
+            {
+                bool io = activeHRManager.IsOpen();
+                // This should be started by the Melon Update void
+                if (io)
+                {
+                    isHeartBeat = false;
+                    OnHeartBeatUpdate.Invoke(isHeartBeat);
+                    // Get HR
+                    int HR = activeHRManager.GetHR();
+                    if (HR > 0 || HR < 0)
+                    {
+                        // Calculate wait interval
+                        float waitTime = default(float);
+                        // When lowering the HR significantly, this will cause issues with the beat bool
+                        // Dubbed the "Breathing Excersise" bug
+                        // There's a 'temp' fix for it right now, but I'm not sure how it'll hold up
+                        try { waitTime = 1 / (HR / 60); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
+                        yield return new WaitForSeconds(waitTime);
+                        isHeartBeat = true;
+                        OnHeartBeatUpdate.Invoke(isHeartBeat);
+                    }
+                }
+                else
+                {
+                    ParamsManager.HRParameter foundParam = ParamsManager.Parameters.Find(x => x.GetParamName() == "isHRBeat");
+                    if (foundParam.GetParamValue() >= 1f)
+                    {
+                        OnHeartBeatUpdate.Invoke(isHeartBeat);
+                    }
+                }
+            }
+            yield return new WaitForSeconds(0.1f);
+            isHeartBeat = false;
+            MelonCoroutines.Start(HeartBeat());
         }
 
         private currentHRSplit intToHRSplit(int hr)
@@ -271,6 +330,8 @@ namespace HRtoVRChat
         {
             FitbitHRtoWS,
             HypeRate,
+            Pulsoid,
+            TextFile,
             Unknown
         }
     }

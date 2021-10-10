@@ -12,5 +12,6 @@ namespace HRtoVRChat
         int GetHR();
         void Stop();
         bool IsOpen();
+        bool IsActive();
     }
 }

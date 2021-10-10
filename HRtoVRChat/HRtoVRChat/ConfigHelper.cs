@@ -18,8 +18,10 @@ namespace HRtoVRChat
         {
             MelonPreferences.CreateCategory(myCategory);
             try { MelonPreferences.CreateEntry(myCategory, "hrtype", "unknown", "hrtype", "Displays the HRType to use; see documentation."); } catch (Exception) { }
-            try { MelonPreferences.CreateEntry(myCategory, "fitbiturl", "ws://localhost:8080/", "fitbiturl", "Websocket URL to Connect to for FitbitHRtoWS."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "fitbiturl", String.Empty, "fitbiturl", "Websocket URL to Connect to for FitbitHRtoWS."); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "hyperatesessionid", String.Empty, "hyperatesessionid", "SessionId for HypeRate."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "pulsoidfeed", String.Empty, "pulsoidfeed", "Feed reference to get Pulsoid Data."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "textfilelocation", String.Empty, "textfilelocation", "Location of the text file that contains HR data. (may only contain ints only!)"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "ShowDebug", false, "ShowDebug", "Show additional Debug Information"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "UIXSupport", true, "UIXSupport", "Add support for the UIExpansionKit mod"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "AMAPISupport", true, "AMAPISupport", "Add support for the ActionMenuApi mod"); } catch (Exception) { }
@@ -44,6 +46,12 @@ namespace HRtoVRChat
                     case "hyperatesessionid":
                         newConfig.hyperateSessionId = mpe.GetValueAsString();
                         break;
+                    case "pulsoidfeed":
+                        newConfig.pulsoidfeed = mpe.GetValueAsString();
+                        break;
+                    case "textfilelocation":
+                        newConfig.textfilelocation = mpe.GetValueAsString();
+                        break;
                     case "showdebug":
                         newConfig.ShowDebug = Convert.ToBoolean(mpe.GetValueAsString());
                         break;
@@ -66,6 +74,8 @@ namespace HRtoVRChat
             public string hrType = "unknown";
             public string fitbitURL = "ws://localhost:8080/";
             public string hyperateSessionId = String.Empty;
+            public string pulsoidfeed = String.Empty;
+            public string textfilelocation = String.Empty;
             public bool ShowDebug = false;
             public bool AMAPISupport = true;
             public bool UIXSupport = true;

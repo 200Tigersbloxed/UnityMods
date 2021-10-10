@@ -1,23 +1,51 @@
 ﻿using HypeRate.NET;
+using System.Threading;
+using UnhollowerBaseLib;
 
 namespace HRtoVRChat.HRManagers
 {
     public class HypeRateManager : HRManager
     {
         public HeartRate hypeRate;
+        private Thread _thread = null;
+        private int forwardedHR = 0;
 
         public bool Init(string sessionId)
         {
-            if (hypeRate == null)
+            StartThread(sessionId);
+            return IsOpen();
+        }
+
+        void VerifyClosedThread()
+        {
+            if (_thread != null)
             {
-                hypeRate = new HeartRate(sessionId);
-                LogHelper.Log("HypeRateManager", "HypeRate Initialized!");
-                Subscribe();
-                return true;
+                if (_thread.IsAlive)
+                    _thread.Abort();
             }
-            else
-                LogHelper.Warn("HypeRateManager", "hypeRate already initialized! Please Unsubscribe() then Dispose() before continuing!");
-            return false;
+        }
+
+        void StartThread(string sessionId)
+        {
+            VerifyClosedThread();
+            _thread = new Thread(() =>
+            {
+                IL2CPP.il2cpp_thread_attach(IL2CPP.il2cpp_domain_get());
+                if (hypeRate == null)
+                {
+                    hypeRate = new HeartRate(sessionId);
+                    LogHelper.Log("HypeRateManager", "HypeRate Initialized!");
+                    Subscribe();
+                }
+                else
+                    LogHelper.Warn("HypeRateManager", "hypeRate already initialized! Please Unsubscribe() then Dispose() before continuing!");
+                while (hypeRate.isSubscribed)
+                {
+                    forwardedHR = hypeRate.HR;
+                    Thread.Sleep(10);
+                }
+            });
+            _thread.Start();
         }
 
         private void Subscribe()
@@ -31,16 +59,7 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Warn("HypeRateManager", "hypeRate is null! Did you Initialize()?");
         }
 
-        public int GetHR()
-        {
-            int iTR = 0;
-            if (hypeRate != null)
-            {
-                iTR = hypeRate.HR;
-            }
-
-            return iTR;
-        }
+        public int GetHR() => forwardedHR;
 
         public void Stop()
         {
@@ -49,6 +68,7 @@ namespace HRtoVRChat.HRManagers
                 hypeRate.Unsubscribe();
                 LogHelper.Log("HypeRateManager", "Unsubscribed from HypeRate Data!");
                 hypeRate = null;
+                VerifyClosedThread();
                 LogHelper.Log("HypeRateManager", "HypeRate disposed!");
             }
             else
@@ -62,5 +82,7 @@ namespace HRtoVRChat.HRManagers
             else
                 return false;
         }
+
+        public bool IsActive() => IsOpen();
     }
 }
