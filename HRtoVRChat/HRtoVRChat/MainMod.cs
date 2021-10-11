@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using MelonLoader;
@@ -224,15 +224,17 @@ namespace HRtoVRChat
 
         IEnumerator BoopUwU()
         {
+            currentHRSplit chs = new currentHRSplit();
+            bool isOpen = false;
             // Get HR
-            if(activeHRManager != null)
+            if (activeHRManager != null)
             {
-                bool isOpen = activeHRManager.IsOpen();
+                isOpen = activeHRManager.IsOpen();
                 int HR = activeHRManager.GetHR();
                 // Cast to currentHRSplit
-                currentHRSplit chs = intToHRSplit(HR);
-                OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, isOpen);
+                chs = intToHRSplit(HR);
             }
+            OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, isOpen);
             yield return new WaitForSeconds(1);
             if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
         }
