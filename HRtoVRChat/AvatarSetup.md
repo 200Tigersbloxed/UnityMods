@@ -40,9 +40,10 @@ Texture and Material for the background. Can be replaced.
 
 ### anims
 
-Includes all the animations for changing the numbers. If you move the HRContainer Prefab outside of the avatar's Chest, you will need to redo all of these.
+Includes all the animations for changing the numbers. You will need to redo all of these, or use [AV3Manager](https://github.com/VRLabs/VRChat-Avatars-3.0) to convert the animations to your avatar automatically.
 
-If you need to redo this, then for each animation for all number spots (ones, tens, and hundreds) do the following:
+Here's how you can redo them manually:
+For each animation for all number spots (ones, tens, and hundreds) do the following:
 1) Open the animation in the Animation window
 2) Clear all the keys
 3) Hit the record button
