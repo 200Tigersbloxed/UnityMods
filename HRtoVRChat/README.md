@@ -31,6 +31,8 @@ Please also consider contributing to add more support with other Heart Rate Moni
 |--------------|----------------|-------------------------------------------------|
 | FitbitHRtoWS | `fitbithrtows` | https://github.com/200Tigersbloxed/FitbitHRtoWS |
 | HypeRate     | `hyperate`     | https://github.com/200Tigersbloxed/HypeRate.NET |
+| Pulsoid/API  | `pulsoid`      | https://pulsoid.net/                            |
+| TextFile     | `textfile`     | just a text file that's saved on your pc lol    |
 
 Take note of HRType, as you'll need to know which you you have to put in the `hrtype` config value.
 
@@ -38,11 +40,16 @@ Take note of HRType, as you'll need to know which you you have to put in the `hr
 
 Below is a table of all the config values and a description. Please update the config accordingly.
 
-| Config Value        | Default Value                  | Description                                             |
-|---------------------|--------------------------------|---------------------------------------------------------|
-| `hrtype`            | `(string)`unknown              | The type of service where to get Heart Rate data from.  |
-| `fitbiturl`         | `(string)`ws://localhost:8080/ | (FitbitHRtoWS Only) The WebSocket URL to connect to.    |
-| `hyperatesessionid` | `(string)` `String.Empty`      | (HypeRate Only) The HypeRate SessionId to subscribe to. |
+| Config Value        | Default Value             | Description                                                                             |
+|---------------------|---------------------------|-----------------------------------------------------------------------------------------|
+| `hrtype`            | `(string)` unknown        | The type of service where to get Heart Rate data from.                                  |
+| `fitbiturl`         | `(string)` `String.Empty` | (FitbitHRtoWS Only) The WebSocket URL to connect to.                                    |
+| `hyperatesessionid` | `(string)` `String.Empty` | (HypeRate Only) The HypeRate SessionId to subscribe to.                                 |
+| `pulsoidfeed`       | `(string)` `String.Empty` | (Pulsoid/API Only) The URL to GET from an API. (Designed for Pulsoid)                   |
+| `textfilelocation`  | `(string)` `String.Empty` | (TextFile Only) Location of the text file where HR data should be read from             |
+| `ShowDebug`         | `(bool)` `false`          | Shows Debug logs for debugging HRtoVRChat.                                              |
+| `UIXSupprt`         | `(bool)` `true`           | Supports the [UserInfoExtensions](https://github.com/knah/VRCMods#ui-expansion-kit) Mod |
+| `AMAPISupport`      | `(bool)` `true`           | Supports the [ActionMenuApi](https://github.com/gompocp/ActionMenuApi) Mod              |
 
 ### Editing the Config
 
