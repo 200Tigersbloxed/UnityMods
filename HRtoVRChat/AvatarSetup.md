@@ -12,6 +12,12 @@ https://learn.unity.com/tutorial/animator-controllers-2019-3
 
 https://learn.unity.com/tutorial/controlling-animation
 
+## Video Tutorial
+
+There's now a video tutorial which demonstrates how to setup the avatar with the [AV3Manager](https://github.com/VRLabs/VRChat-Avatars-3.0) tool, which makes setup a thousand times easier! I'd *heavily* suggest following this video guide if you have troubles with SDK3.
+
+https://vimeo.com/629586690
+
 ## HRContainer
 
 The Example HRContainer for an avatar. This was made to work when put inside the avatar's chest bone, if you move it somewhere else, you may have to redo the animations provided. (30 animations/1 layers per 10 animations/3 layers in all)
