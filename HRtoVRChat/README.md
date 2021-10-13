@@ -76,7 +76,7 @@ So please don't complain to me when you get banned for having your Heart Rate sh
 
 # Latest Release
 
-Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.2.0) for the latest release
+Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.3.0) for the latest release
 
 # Extra Info
 
