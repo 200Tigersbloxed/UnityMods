@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using MelonLoader;
@@ -6,8 +6,6 @@ using UnityEngine;
 using VRC.SDKBase;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading;
-using UnhollowerBaseLib;
 
 namespace HRtoVRChat
 {
@@ -18,9 +16,11 @@ namespace HRtoVRChat
         private bool UpdateIENum = true;
         private bool isRestarting = false;
 
-        public static Action<int, int, int, bool> OnHRValuesUpdated = (ones, tens, hundreds, isConnected) => { };
-        public static Action<bool> OnHeartBeatUpdate = (isHeartBeat) => { };
+        public static Action<int, int, int, int, bool, bool> OnHRValuesUpdated = (ones, tens, hundreds, HR, isConnected, isActive) => { };
+        public static Action<bool> OnHeartBeatUpdate = (isHeartBeat) => { MelonCoroutines.Start(WaitStartHeartBeat()); };
         public static bool isHeartBeat { get; private set; } = false;
+
+        private bool isAppClosing = false;
 
         private class currentHRSplit
         {
@@ -102,13 +102,18 @@ namespace HRtoVRChat
 
         public override void OnPreferencesSaved()
         {
-            // Get Config
-            ConfigHelper.Config lc = ConfigHelper.LoadConfig();
-            // Restart and read new config
-            LogHelper.Log("MainMod", "Restarting HRtoVRChat!");
-            RestartHRListener();
-            // based, red-pilled
-            base.OnPreferencesSaved();
+            if (!isAppClosing)
+            {
+                // Get Config
+                ConfigHelper.Config lc = ConfigHelper.LoadConfig();
+                // Restart and read new config
+                LogHelper.Log("MainMod", "Restarting HRtoVRChat!");
+                RestartHRListener();
+                // based, red-pilled
+                base.OnPreferencesSaved();
+            }
+            else
+                LogHelper.Debug("MainMod", "Application is quitting! Not loading Config.");
         }
 
         private void Start()
@@ -121,6 +126,7 @@ namespace HRtoVRChat
 
         private void Stop()
         {
+            isAppClosing = true;
             // Stop MelonCoroutine
             UpdateIENum = false;
             MelonCoroutines.Stop(BoopUwU());
@@ -168,6 +174,9 @@ namespace HRtoVRChat
                 case "textfile":
                     hrt = HRType.TextFile;
                     break;
+                case "win-blegatt":
+                    hrt = HRType.WinBLEGATT;
+                    break;
             }
 
             return hrt;
@@ -202,6 +211,10 @@ namespace HRtoVRChat
                     activeHRManager = new HRManagers.TextFileManager();
                     activeHRManager.Init(ConfigHelper.LoadedConfig.textfilelocation);
                     break;
+                case HRType.WinBLEGATT:
+                    activeHRManager = new HRManagers.WinBLEGATTManager();
+                    activeHRManager.Init("");
+                    break;
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
                     break;
@@ -226,20 +239,29 @@ namespace HRtoVRChat
         {
             currentHRSplit chs = new currentHRSplit();
             bool isOpen = false;
+            bool isActive = false;
             // Get HR
+            int HR = 0;
             if (activeHRManager != null)
             {
+                HR = activeHRManager.GetHR();
                 isOpen = activeHRManager.IsOpen();
-                int HR = activeHRManager.GetHR();
+                isActive = activeHRManager.IsActive();
                 // Cast to currentHRSplit
                 chs = intToHRSplit(HR);
             }
-            OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, isOpen);
+            OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, HR, isOpen, isActive);
             yield return new WaitForSeconds(1);
             if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
         }
 
-        IEnumerator HeartBeat()
+        static IEnumerator WaitStartHeartBeat()
+        {
+            yield return new WaitForSeconds(0.2f);
+            MelonCoroutines.Start(HeartBeat());
+        }
+
+        static IEnumerator HeartBeat()
         {
             if(activeHRManager != null)
             {
@@ -250,9 +272,10 @@ namespace HRtoVRChat
                     isHeartBeat = false;
                     OnHeartBeatUpdate.Invoke(isHeartBeat);
                     // Get HR
-                    int HR = activeHRManager.GetHR();
+                    float HR = activeHRManager.GetHR() - 0.2f;
                     if (HR > 0 || HR < 0)
                     {
+                        isHeartBeat = false;
                         // Calculate wait interval
                         float waitTime = default(float);
                         // When lowering the HR significantly, this will cause issues with the beat bool
@@ -273,9 +296,6 @@ namespace HRtoVRChat
                     }
                 }
             }
-            yield return new WaitForSeconds(0.1f);
-            isHeartBeat = false;
-            MelonCoroutines.Start(HeartBeat());
         }
 
         private currentHRSplit intToHRSplit(int hr)
@@ -334,6 +354,7 @@ namespace HRtoVRChat
             HypeRate,
             Pulsoid,
             TextFile,
+            WinBLEGATT,
             Unknown
         }
     }

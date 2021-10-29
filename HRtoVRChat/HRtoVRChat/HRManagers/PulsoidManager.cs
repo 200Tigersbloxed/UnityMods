@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
-using MelonLoader;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 using System.Threading;
 using UnhollowerBaseLib;
 
@@ -69,8 +65,8 @@ namespace HRtoVRChat.HRManagers
                         LogHelper.Error("PulsoidManager", "Failed to get HttpRequest! Exception: " + e);
                     }
                     HR = parsedHR;
+                    Thread.Sleep(250);
                 }
-                Thread.Sleep(500);
             });
             _thread.Start();
         }

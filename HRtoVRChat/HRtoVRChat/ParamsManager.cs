@@ -12,7 +12,20 @@ namespace HRtoVRChat
             new IntParameter(hro => hro.tens, "tensHR"),
             new IntParameter(hro => hro.hundreds, "hundredsHR"),
             new BoolParameter(hro => hro.isConnected, "isHRConnected"),
-            new BoolParameter(BoolCheckType.HeartBeat, "isHRBeat")
+            new BoolParameter(BoolCheckType.HeartBeat, "isHRBeat"),
+            new FloatParameter((hro) => 
+            {
+                float targetFloat = 0f;
+                float maxhr = (float)ConfigHelper.LoadedConfig.MaxHR;
+                float minhr = (float)ConfigHelper.LoadedConfig.MinHR;
+                if(maxhr > hro.HR)
+                    targetFloat = 1;
+                else if(minhr < hro.HR)
+                    targetFloat = 0;
+                else
+                    targetFloat = (hro.HR - minhr) / maxhr;
+                return targetFloat;
+            }, "HRPercent", false)
         };
 
         public class IntParameter : ParamLib.IntBaseParam, HRParameter
@@ -23,7 +36,7 @@ namespace HRtoVRChat
             {
                 SetParamName = parameterName;
                 LogHelper.Debug("ParamsManager", $"IntParameter with ParameterName: {parameterName}, has been created!");
-                MainMod.OnHRValuesUpdated += (ones, tens, hundreds, isConnected) =>
+                MainMod.OnHRValuesUpdated += (ones, tens, hundreds, HR, isConnected, isActive) =>
                 {
                     HROutput hro = new HROutput()
                     {
@@ -50,14 +63,16 @@ namespace HRtoVRChat
             {
                 SetParamName = parameterName;
                 LogHelper.Debug("ParamsManager", $"BoolParameter with ParameterName: {parameterName}, has been created!");
-                MainMod.OnHRValuesUpdated += (ones, tens, hundreds, isConnected) =>
+                MainMod.OnHRValuesUpdated += (ones, tens, hundreds, HR, isConnected, isActive) =>
                 {
                     HROutput hro = new HROutput()
                     {
                         ones = ones,
                         tens = tens,
                         hundreds = hundreds,
-                        isConnected = isConnected
+                        HR = HR,
+                        isConnected = isConnected,
+                        isActive = isActive
                     };
                     bool valueToSet = getVal.Invoke(hro);
                     ParamValue = valueToSet;
@@ -84,12 +99,43 @@ namespace HRtoVRChat
             float HRParameter.GetParamValue() { if (ParamValue) return 1; else return 0; }
         }
 
+        public class FloatParameter : ParamLib.FloatBaseParam, HRParameter
+        {
+            private string SetParamName = String.Empty;
+
+            public FloatParameter(Func<HROutput, float> getVal, string parameterName, bool prioritisedFloat) : base(paramName: parameterName, prioritised: prioritisedFloat)
+            {
+                SetParamName = parameterName;
+                LogHelper.Debug("ParamsManager", $"FloatParameter with ParameterName: {parameterName} and Priority set to: {prioritisedFloat}, has been created!");
+                MainMod.OnHRValuesUpdated += (ones, tens, hundreds, HR, isConnected, isActive) =>
+                {
+                    HROutput hro = new HROutput()
+                    {
+                        ones = ones,
+                        tens = tens,
+                        hundreds = hundreds,
+                        HR = HR,
+                        isConnected = isConnected,
+                        isActive = isActive
+                    };
+                    float targetValue = getVal.Invoke(hro);
+                    ParamValue = targetValue;
+                };
+            }
+
+            string HRParameter.GetParamName() => SetParamName;
+            float HRParameter.GetParamValue() => ParamValue;
+            void HRParameter.ResetParam() => ResetParam();
+        }
+
         public class HROutput
         {
             public int ones;
             public int tens;
             public int hundreds;
+            public int HR;
             public bool isConnected;
+            public bool isActive;
         }
 
         public interface HRParameter

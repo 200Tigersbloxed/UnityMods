@@ -25,6 +25,8 @@ namespace HRtoVRChat
             try { MelonPreferences.CreateEntry(myCategory, "ShowDebug", false, "ShowDebug", "Show additional Debug Information"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "UIXSupport", true, "UIXSupport", "Add support for the UIExpansionKit mod"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "AMAPISupport", true, "AMAPISupport", "Add support for the ActionMenuApi mod"); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "MaxHR", 150, "MaxHR", "Sets the maximum HR value for the HRPercent parameter (1)"); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "MinHR", 0, "MinHR", "Sets the minimum HR value for the HRPercent parameter (0)"); } catch (Exception) { }
             LogHelper.Log("ConfigHelper", "Created Config!");
         }
 
@@ -61,6 +63,12 @@ namespace HRtoVRChat
                     case "amapisupport":
                         newConfig.AMAPISupport = Convert.ToBoolean(mpe.GetValueAsString());
                         break;
+                    case "maxhr":
+                        newConfig.MaxHR = Convert.ToDouble(mpe.GetDefaultValueAsString());
+                        break;
+                    case "minhr":
+                        newConfig.MinHR = Convert.ToDouble(mpe.GetDefaultValueAsString());
+                        break;
                 }
             }
 
@@ -79,6 +87,8 @@ namespace HRtoVRChat
             public bool ShowDebug = false;
             public bool AMAPISupport = true;
             public bool UIXSupport = true;
+            public double MaxHR = 150;
+            public double MinHR = 0;
         }
     }
 }

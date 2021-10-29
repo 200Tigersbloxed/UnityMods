@@ -69,6 +69,7 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Log("HypeRateManager", "Unsubscribed from HypeRate Data!");
                 hypeRate = null;
                 VerifyClosedThread();
+                forwardedHR = 0;
                 LogHelper.Log("HypeRateManager", "HypeRate disposed!");
             }
             else

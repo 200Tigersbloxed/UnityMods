@@ -1,12 +1,8 @@
 ﻿using System;
 using WebSocketSharp;
-using System.Collections;
-using MelonLoader;
-using UnityEngine;
 using System.Threading;
 using UnhollowerBaseLib;
 using System.Net;
-using System.Linq;
 
 namespace HRtoVRChat.HRManagers
 {
@@ -107,14 +103,14 @@ namespace HRtoVRChat.HRManagers
         private void getHRMessage()
         {
             if(ws != null)
-                if (ws.IsAlive)
+                if (ws.ReadyState == WebSocketState.Open)
                     ws.Send("getHR");
         }
 
         private void getFitbitConnectionMessage()
         {
             if (ws != null)
-                if (ws.IsAlive)
+                if (ws.ReadyState == WebSocketState.Open)
                     ws.Send("checkFitbitConnection");
         }
 
@@ -123,7 +119,7 @@ namespace HRtoVRChat.HRManagers
         private void Close()
         {
             if (ws != null)
-                if (ws.IsAlive)
+                if (ws.ReadyState == WebSocketState.Open)
                     ws.Close();
                 else
                     LogHelper.Warn("FitbitManager", "WebSocket is not alive! Did you mean to Dispose()?");
@@ -135,7 +131,7 @@ namespace HRtoVRChat.HRManagers
         {
             if (ws != null)
             {
-                if (ws.IsAlive)
+                if (ws.ReadyState == WebSocketState.Open)
                 {
                     Close();
                     ws = null;
