@@ -7,51 +7,76 @@ using System.Threading;
 
 namespace LabratEyeTracking
 {
-    public static class PimaxHelper
+    public class PimaxHelper : IEyeTracking
     {
-        public static bool EnableEyeTracking = false;
-        public static Pimax.EyeTracking.EyeTracker eyeTracker;
+        public bool EyeTrackingEnabled { get; set; } = false;
+        public Pimax.EyeTracking.EyeTracker eyeTracker;
 
-        private static Thread PimaxWorker;
+        private Thread PimaxWorker;
 
-        public static void Initialize() => Start();
+        public void Initialize() => Init();
 
-        public static void Start() 
+        public void Init() 
         {
             PimaxWorker = new Thread(delegate ()
             {
                 eyeTracker = new Pimax.EyeTracking.EyeTracker();
-                //eyeTracker.OnUpdate += OnEyeTrackerUpdate;
                 eyeTracker.OnStart += OnEyeTrackerStart;
                 eyeTracker.OnStop += OnEyeTrackerStop;
-                EnableEyeTracking = true;
-                eyeTracker.Start();
+                EyeTrackingEnabled = true;
+                try { eyeTracker.Start(); LogHelper.Debug("Pimax Eye Tracking Initialized!"); }
+                catch(Exception e) { LogHelper.Error($"Pimax Eye Tracking failed to Start! Exception: {e}"); }
                 // Keep the Thread Alive
-                while (EnableEyeTracking) { Thread.Sleep(10); }
+                while (EyeTrackingEnabled)
+                {
+                    UpdateEyeData();
+                    Thread.Sleep(10);
+                }
+                // Stop eye tracking and reset
+                eyeTracker.Stop();
+                eyeTracker = null;
+                LogHelper.Debug("Killed PimaxEyeTracking");
+                // Abort Thread
+                if (PimaxWorker != null)
+                {
+                    if (PimaxWorker.IsAlive)
+                        PimaxWorker.Abort();
+                }
+                PimaxWorker = null;
             });
+            PimaxWorker.Start();
         }
-        public static void Kill() 
+
+        private void UpdateEyeData()
         {
-            if (!EnableEyeTracking)
+            Eye LeftEye = new Eye()
+            {
+                x = eyeTracker.LeftEye.Gaze.x,
+                y = eyeTracker.LeftEye.Gaze.y,
+                Widen = eyeTracker.LeftEye.Openness
+            };
+            Eye RightEye = new Eye()
+            {
+                x = eyeTracker.RightEye.Gaze.x,
+                y = eyeTracker.RightEye.Gaze.y,
+                Widen = eyeTracker.RightEye.Openness
+            };
+            UniversalEyeData.UpdateLeftEyeData(LeftEye);
+            UniversalEyeData.UpdateRightEyeData(RightEye);
+        }
+
+        public void Kill() 
+        {
+            if (!EyeTrackingEnabled)
             {
                 LogHelper.Warn("Eye Tracking is not enabled, can't kill.");
                 return;
             }
-            // Abort Thread
-            if (PimaxWorker != null)
-            {
-                if (PimaxWorker.IsAlive)
-                    PimaxWorker.Abort();
-            }
-            PimaxWorker = null;
-            // Stop eye tracking and reset
-            eyeTracker.Stop();
-            eyeTracker = null;
+            EyeTrackingEnabled = false;
         }
 
-        private static void OnEyeTrackerStart() => LogHelper.Debug("Pimax Eye Tracker Started!");
-
-        private static void OnEyeTrackerStop()
+        private void OnEyeTrackerStart() => LogHelper.Debug("Pimax Eye Tracker Started!");
+        private void OnEyeTrackerStop()
         {
             LogHelper.Debug("Pimax Eye Tracker Stopped!");
             // Call Kill in-case we weren't supposed to stop

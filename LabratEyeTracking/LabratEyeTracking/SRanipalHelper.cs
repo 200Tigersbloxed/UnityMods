@@ -12,60 +12,83 @@ using ViveSR.anipal.Eye;
 
 namespace LabratEyeTracking
 {
-    public static class SRanipalHelper
+    public class SRanipalHelper : IEyeTracking
     {
-        public static bool EyeTrackingEnabled = false;
-        private static bool VerifyEyeError(this Error error) => error != Error.WORK && error != Error.UNDEFINED && error != (Error)1051;
-        private static Thread SRanipalWorker;
+        public bool EyeTrackingEnabled { get; set; } = false;
+        private bool VerifyEyeError(Error error) => error != Error.WORK && error != Error.UNDEFINED && error != (Error)1051;
+        private Thread SRanipalWorker;
 
         public static EyeData_v2 EyeData;
 
-        public static void Initialize()
+        public void Init()
         {
-            Error eyeError = Error.UNDEFINED;
             if (EyeTrackingEnabled)
             {
                 LogHelper.Warn("SRanipal was already active, restarting... Please wait 5 seconds.");
                 SRanipal_API.Release(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2);
                 Thread.Sleep(5000);
             }
-            eyeError = SRanipal_API.Initial(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2, IntPtr.Zero);
-
-            if (eyeError.VerifyEyeError()) { LogHelper.Error("Failed to Initialize SRanipal Eye Tracking! EXCEPTION: " + eyeError.ToString()); return; }
-            LogHelper.Debug("SRanipal Eye Tracking Initialized!"); EyeTrackingEnabled = true;
             StartThread();
         }
 
-        public static void StartThread()
+        public void StartThread()
         {
             SRanipalWorker = new Thread(delegate()
             {
+                Error eyeError = Error.UNDEFINED;
+                eyeError = SRanipal_API.Initial(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2, IntPtr.Zero);
+
+                if (VerifyEyeError(eyeError)) { LogHelper.Error("Failed to Initialize SRanipal Eye Tracking! EXCEPTION: " + eyeError.ToString()); return; }
+                LogHelper.Debug("SRanipal Eye Tracking Initialized!"); EyeTrackingEnabled = true;
                 while (EyeTrackingEnabled)
                 {
                     UpdateEyeData();
                     Thread.Sleep(10);
                 }
+                // Release Eye Tracking
+                SRanipal_API.Release(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2);
+                LogHelper.Debug("Killed SRanipal");
+                // Abort Thread
+                if (SRanipalWorker != null)
+                {
+                    if (SRanipalWorker.IsAlive)
+                        SRanipalWorker.Abort();
+                }
+                SRanipalWorker = null;
             });
+            SRanipalWorker.Start();
         }
 
-        public static void Kill()
+        public void Kill()
         {
             if (!EyeTrackingEnabled)
             {
                 LogHelper.Warn("Eye Tracking is not enabled, can't kill.");
                 return;
             }
-            // Abort Thread
-            if (SRanipalWorker != null)
-            {
-                if (SRanipalWorker.IsAlive)
-                    SRanipalWorker.Abort();
-            }
-            SRanipalWorker = null;
-            // Release Eye Tracking
-            SRanipal_API.Release(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2); LogHelper.Debug("Killed SRanipal");
+            EyeTrackingEnabled = false;
         }
 
-        public static void UpdateEyeData() { if (EyeTrackingEnabled) { SRanipal_Eye_API.GetEyeData_v2(ref EyeData); } }
+        public void UpdateEyeData() 
+        { 
+            if (EyeTrackingEnabled) 
+            { 
+                SRanipal_Eye_API.GetEyeData_v2(ref EyeData);
+                Eye LeftEye = new Eye()
+                {
+                    x = EyeData.verbose_data.left.pupil_position_in_sensor_area.x,
+                    y = EyeData.verbose_data.left.pupil_position_in_sensor_area.y,
+                    Widen = EyeData.verbose_data.left.eye_openness
+                };
+                Eye RightEye = new Eye()
+                {
+                    x = EyeData.verbose_data.right.pupil_position_in_sensor_area.x,
+                    y = EyeData.verbose_data.right.pupil_position_in_sensor_area.y,
+                    Widen = EyeData.verbose_data.right.eye_openness
+                };
+                UniversalEyeData.UpdateLeftEyeData(LeftEye);
+                UniversalEyeData.UpdateRightEyeData(RightEye);
+            }
+        }
     }
 }

@@ -24,6 +24,9 @@ namespace LabratEyeTracking
         // Config Values
         private ConfigEntry<int> sdkType;
 
+        // IEyeTracking Stuff
+        private IEyeTracking currentEyeTrackingRuntime = null;
+
         void Awake()
         {
             // Load Config
@@ -39,33 +42,30 @@ namespace LabratEyeTracking
                 case 1:
                     // Start the SRanipal SDK
                     LogHelper.Debug("Initializing SRanipal SDK...");
-                    SRanipalHelper.Initialize();
+                    currentEyeTrackingRuntime = new SRanipalHelper();
                     break;
                 case 2:
                     // Start the Pimax Eye Tracker
                     LogHelper.Debug("Initializing Pimax Eye Tracking...");
-                    PimaxHelper.Initialize();
+                    currentEyeTrackingRuntime = new PimaxHelper();
                     break;
                 default:
                     // None were selected
-                    LogHelper.Warn("Config values was set to 0. Have you changed the config yet?");
+                    LogHelper.Warn($"Config values was set to {sdkType.Value}, which is not recognized as an SDK Type! Have you changed the config yet?");
                     LogHelper.Warn("You can find the config under 'BepInEx/config/lol.fortnite.www.labrateyetracking.cfg'");
                     LogHelper.Warn("Set the Value to 1 for SRanipal, or set the value to 2 for Pimax");
                     break;
             }
+            if (currentEyeTrackingRuntime != null)
+                currentEyeTrackingRuntime.Init();
         }
 
         void OnApplicationQuit()
         {
-            if (SRanipalHelper.EyeTrackingEnabled)
+            if (currentEyeTrackingRuntime.EyeTrackingEnabled)
             {
-                LogHelper.Debug("Killing the SRanipal SDK...");
-                SRanipalHelper.Kill();
-            }
-            if (PimaxHelper.eyeTracker.Active)
-            {
-                LogHelper.Debug("Killing the Pimax Eye Tracker...");
-                PimaxHelper.Kill();
+                LogHelper.Debug("Killing the Current Eye Tracker's SDK...");
+                currentEyeTrackingRuntime.Kill();
             }
         }
 
@@ -89,11 +89,9 @@ namespace LabratEyeTracking
 
         void Update()
         {
-            // Start updating eye values if SubscribeEyeData is true
-            if (SubscribeEyeData)
+            // Verify the EyeTracking is active
+            if (currentEyeTrackingRuntime.EyeTrackingEnabled)
             {
-                // Update the Eye Values
-                SRanipalHelper.UpdateEyeData();
                 // Check if the user is blinking
                 if (GameHelper.IsGameScene(TryGetScene()))
                 {
@@ -102,19 +100,7 @@ namespace LabratEyeTracking
                         // set the UI text soon
                         //GameHelper.SetUILabelText(SRanipalHelper.EyeData.verbose_data.combined.eye_data.eye_openness.ToString());
                         // Left and Right are separate, because combined wasn't working for me
-                        float combinedEyeOpeness = 1;
-                        switch (sdkType.Value)
-                        {
-                            case 1:
-                                // SRanipal
-                                combinedEyeOpeness = (SRanipalHelper.EyeData.verbose_data.left.eye_openness + SRanipalHelper.EyeData.verbose_data.right.eye_openness) / 2;
-                                break;
-                            case 2:
-                                // Pimax
-                                combinedEyeOpeness = (PimaxHelper.eyeTracker.LeftEye.Expression.Openness + PimaxHelper.eyeTracker.RightEye.Expression.Openness) / 2;
-                                break;
-                        }
-                        if (combinedEyeOpeness <= 0.4f)
+                        if (UniversalEyeData.CombinedEye.Widen <= 0.4f)
                         {
                             Blinking.UpdateWaitTime(BlinkComponent, Mathf.Infinity);
                             if (!Blinking.IsBlinking) { Blinking.CloseEyes(BlinkComponent); }
