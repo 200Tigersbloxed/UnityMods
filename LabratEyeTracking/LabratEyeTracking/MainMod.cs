@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace LabratEyeTracking
 {
-    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.1.1")]
+    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.2.0")]
     [BepInProcess("SCP Labrat.exe")]
     class MainMod : BaseUnityPlugin
     {
