@@ -6,13 +6,6 @@
 
 HRtoVRChat allows you to send your Heart Rate into VRChat via. Expression Parameters. HRtoVRChat only uses 3 int parameters, as to not require to use a bunch of storage. (see parameters section)
 
-## Dependencies
-
-Please make sure all the mods in the list are installed before continuing.
-
-+ [VRCUtilityKit](https://github.com/loukylor/VRC-Mods#vrchatutilitykit)
-  + Also found on [VRCMelonAssistant](https://github.com/knah/VRCMelonAssistant)
-
 ## Installing
 
 1) Download and Install the latest release of [MelonLoader](https://github.com/LavaGang/MelonLoader/releases) to VRChat (see warning section)
@@ -48,6 +41,8 @@ Below is a table of all the config values and a description. Please update the c
 | `pulsoidfeed`       | `(string)` `String.Empty` | (Pulsoid/API Only) The URL to GET from an API. (Designed for Pulsoid)                   |
 | `textfilelocation`  | `(string)` `String.Empty` | (TextFile Only) Location of the text file where HR data should be read from             |
 | `ShowDebug`         | `(bool)` `false`          | Shows Debug logs for debugging HRtoVRChat.                                              |
+| `MaxHR`             | `(double)` 150            | Maximum range for the `HRPercent (float)` parameter                                     |
+| `MinHR`             | `(double)` 0              | Minimum range for the `HRPercent (float)` parameter                                     |
 | `UIXSupprt`         | `(bool)` `true`           | Supports the [UserInfoExtensions](https://github.com/knah/VRCMods#ui-expansion-kit) Mod |
 | `AMAPISupport`      | `(bool)` `true`           | Supports the [ActionMenuApi](https://github.com/gompocp/ActionMenuApi) Mod              |
 
@@ -76,9 +71,8 @@ So please don't complain to me when you get banned for having your Heart Rate sh
 
 # Latest Release
 
-Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.3.0) for the latest release
+Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.4.0) for the latest release
 
 # Extra Info
 
 + Library [ParamLib](https://github.com/benaclejames/ParamLib) is used to update parameters on an avatar. Code is kept up to date with latest push; no changes to code are made.
-+ Library [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods#vrchatutilitykit) is used to update parameters on Local Avatar Update (changed avatars); no changes to code are made.
