@@ -1,4 +1,4 @@
-﻿//using GenericHRLib; Replaced with Reflection
+﻿using GenericHRLib;
 using System;
 using System.IO;
 using System.Reflection;
@@ -7,6 +7,7 @@ using UnhollowerBaseLib;
 
 namespace HRtoVRChat.HRManagers
 {
+    /*
     public class WinBLEGATTManager : HRManager
     {
         private Assembly generichr_assembly = null;
@@ -28,8 +29,6 @@ namespace HRtoVRChat.HRManagers
 
         private void load_generichr_resource()
         {
-            byte[] assemblyBytes = null;
-            byte[] assemblySymbols = null;
             var assembly = Assembly.GetExecutingAssembly();
             using (var stream = assembly.GetManifestResourceStream("HRtoVRChat.Libs.GenericHRLib.dll"))
             {
@@ -38,29 +37,13 @@ namespace HRtoVRChat.HRManagers
                     using (MemoryStream ms = new MemoryStream())
                     {
                         stream.CopyTo(ms);
-                        assemblyBytes = ms.ToArray();
+                        Assembly.Load(ms.ToArray());
                         LogHelper.Debug("WinBLEGATTManager", "Loaded GenericHRLib Assembly!");
                     }
                 }
                 else
                     LogHelper.Error("WinBLEGATTManager", "stream is null! Does the ManifestResource exist?");
             }
-            using (var stream = assembly.GetManifestResourceStream("HRtoVRChat.Libs.GenericHRLib.pdb"))
-            {
-                if (stream != null)
-                {
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        stream.CopyTo(ms);
-                        assemblySymbols = ms.ToArray();
-                        LogHelper.Debug("WinBLEGATTManager", "Loaded GenericHRLib Assembly Symbols!");
-                    }
-                }
-                else
-                    LogHelper.Error("WinBLEGATTManager", "stream is null! Does the ManifestResource exist?");
-            }
-            if (assemblyBytes != null && assemblySymbols != null)
-                Assembly.Load(assemblyBytes, assemblySymbols);
         }
 
         private object create_generichr_instance()
@@ -170,8 +153,8 @@ namespace HRtoVRChat.HRManagers
             VerifyClosedThread();
         }
     }
+    */
 
-    /*
     public class WinBLEGATTManager : HRManager
     {
         private Thread _thread = null;
@@ -180,8 +163,83 @@ namespace HRtoVRChat.HRManagers
         public int HR { get; private set; } = 0;
         public bool isDeviceConnected { get; private set; } = false;
 
+        private bool LoadedAssemblies = false;
+
+        public void LoadWindowsContracts()
+        {
+            string programFilesPath = String.Empty;
+            string nugetPath = String.Empty;
+            if(Directory.Exists("C:\\Program Files (x86)\\Windows Kits\\10\\References"))
+                programFilesPath = "C:\\Program Files(x86)\\Windows Kits\\10\\References";
+            if (Directory.Exists(Environment.ExpandEnvironmentVariables("%USERPROFILE%\\.nuget\\packages\\microsoft.windows.sdk.contracts")))
+                nugetPath = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\.nuget\\packages\\microsoft.windows.sdk.contracts");
+            if (!string.IsNullOrEmpty(programFilesPath) && !LoadedAssemblies)
+            {
+                foreach (string sdkVersion in Directory.GetDirectories(programFilesPath))
+                {
+                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.FoundationContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.FoundationContract.winmd");
+                    else
+                        LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.FoundationContract Assembly! Prepare to crash!");
+
+                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.UniversalApiContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.UniversalApiContract.winmd");
+                    else
+                        LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.UniversalApiContract Assembly! Prepare to crash!");
+                }
+            }
+            else if (!string.IsNullOrEmpty(nugetPath) && !LoadedAssemblies)
+            {
+                foreach (string sdkVersion in Directory.GetDirectories(nugetPath))
+                {
+                    if (File.Exists($"{sdkVersion}\\ref\\netstandard2.0\\Windows.Foundation.FoundationContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\ref\\netstandard2.0\\Windows.Foundation.FoundationContract.winmd");
+                    else
+                        LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.FoundationContract Assembly! Prepare to crash!");
+
+                    if (File.Exists($"{sdkVersion}\\ref\\netstandard2.0\\Windows.Foundation.UniversalApiContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\ref\\netstandard2.0\\Windows.Foundation.UniversalApiContract.winmd");
+                    else
+                        LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.UniversalApiContract Assembly! Prepare to crash!");
+                }
+            }
+            else if (LoadedAssemblies)
+                LogHelper.Debug("WinBLEGATTManager", "Already loaded Contract Assemblies, not loading again.");
+            else
+                LogHelper.Error("WinBLEGATTManager", "Failed to find contract locations, do you have the Windows SDK?");
+        }
+
+        private void LoadFoundation()
+        {
+            if (Directory.Exists("C:\\Windows\\System32\\WinMetadata"))
+                if (File.Exists("C:\\Windows\\System32\\WinMetadata\\Windows.Foundation.winmd"))
+                    Assembly.LoadFrom("C:\\Windows\\System32\\WinMetadata\\Windows.Foundation.winmd");
+                else
+                    LogHelper.Error("WinBLEGATTManager", "Failed to find Windows.Foundation.winmd! Are you on Windows 10?");
+            else
+                LogHelper.Error("WinBLEGATTManager", "Failed to find WinMetadata!");
+        }
+
+        private void LoadServices()
+        {
+            if (Directory.Exists("C:\\Windows\\System32\\WinMetadata"))
+                if (File.Exists("C:\\Windows\\System32\\WinMetadata\\Windows.Services.winmd"))
+                    Assembly.LoadFrom("C:\\Windows\\System32\\WinMetadata\\Windows.Services.winmd");
+                else
+                    LogHelper.Error("WinBLEGATTManager", "Failed to find Windows.Services.winmd! Are you on Windows 10?");
+            else
+                LogHelper.Error("WinBLEGATTManager", "Failed to find WinMetadata!");
+        }
+
         public bool Init(string bruh)
         {
+            if (!LoadedAssemblies)
+            {
+                LoadWindowsContracts();
+                LoadFoundation();
+                LoadServices();
+                LoadedAssemblies = true;
+            }
             StartThread();
             return isDeviceConnected;
         }
@@ -241,5 +299,4 @@ namespace HRtoVRChat.HRManagers
             isDeviceConnected = false;
         }
     }
-    */
 }

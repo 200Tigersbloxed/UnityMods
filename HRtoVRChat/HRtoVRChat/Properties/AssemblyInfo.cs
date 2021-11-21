@@ -20,4 +20,4 @@ using HRtoVRChat;
 
 [assembly: MelonInfo(typeof(MainMod), "HRtoVRChat", "v1.4.0", "200Tigersbloxed")]
 [assembly: MelonGame("VRChat", "VRChat")]
-[assembly: MelonOptionalDependencies(new string[] { "UIExpansionKit", "ActionMenuApi" })]
+[assembly: MelonOptionalDependencies(new string[] { "UIExpansionKit", "ActionMenuApi", "Windows.Foundation.FoundationContract", "Windows.Foundation.UniversalApiContract" })]

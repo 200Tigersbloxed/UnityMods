@@ -12,8 +12,7 @@ namespace ParamLib
         private static AvatarPlayableController LocalPlayableController => LocalAnimParamController
             ?.field_Private_AvatarPlayableController_0;
 
-        private static AvatarAnimParamController LocalAnimParamController => VRCPlayer
-            .field_Internal_Static_VRCPlayer_0
+        private static AvatarAnimParamController LocalAnimParamController => VRCPlayer.field_Internal_Static_VRCPlayer_0
             ?.field_Private_AnimatorControllerManager_0?.field_Private_AvatarAnimParamController_0;
 
         private static readonly MethodInfo PrioritizeMethod = typeof(AvatarPlayableController).GetMethods().Where(info =>
@@ -34,14 +33,31 @@ namespace ParamLib
             PrioritizeMethod.Invoke(LocalPlayableController, new object[] { paramIndex });
         }
 
-        public static (int?, VRCExpressionParameters.Parameter) FindParam(string paramName, VRCExpressionParameters.ValueType paramType)
-        {
-            VRCExpressionParameters.Parameter[] parameters = VRCPlayer.field_Internal_Static_VRCPlayer_0
-                ?.prop_VRCAvatarManager_0?.prop_VRCAvatarDescriptor_0?.expressionParameters
-                ?.parameters;
+        public static VRCExpressionParameters.Parameter[] GetLocalParams() =>
+            GetParams(VRCPlayer.field_Internal_Static_VRCPlayer_0);
 
-            if (parameters == null)
-                return (null, null);
+        public static VRCExpressionParameters.Parameter[] GetParams(VRCPlayer player) => player?.prop_VRCAvatarManager_0
+            ?.prop_VRCAvatarDescriptor_0?.expressionParameters
+            ?.parameters;
+
+        public static bool DoesParamExist(string paramName, VRCExpressionParameters.ValueType paramType,
+            VRCExpressionParameters.Parameter[] parameters = null)
+        {
+            // If they're null, then try getting LocalParams
+            parameters = parameters ?? GetLocalParams();
+
+            // Separate Length from nulll check, otherwise you'll get a null exception if parameters are null
+            return parameters != null && parameters.Any(p => p.name == paramName && p.valueType == paramType);
+        }
+
+        public static (int?, VRCExpressionParameters.Parameter) FindParam(string paramName, VRCExpressionParameters.ValueType paramType,
+            VRCExpressionParameters.Parameter[] parameters = null)
+        {
+            // If they're null, then try getting LocalParams
+            parameters = parameters ?? GetLocalParams();
+
+            if (parameters == null) return (null, null);
+
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -52,6 +68,8 @@ namespace ParamLib
 
             return (null, null);
         }
+
+        public static double? GetParamDefaultValue(VRCExpressionParameters.Parameter param) => param?.defaultValue;
 
         public static bool SetParameter(int paramIndex, float value)
         {

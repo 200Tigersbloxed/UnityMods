@@ -7,6 +7,7 @@
           <!--<InputAssemblies Include="$(MSBuildThisFileDirectory)\Libs\GenericHRLib.dll" />-->
           <InputAssemblies Include="$(MSBuildThisFileDirectory)\Libs\websocket-sharp.dll" />
           <InputAssemblies Include="$(MSBuildThisFileDirectory)\Libs\Newtonsoft.Json.dll" />
+          <!--<InputAssemblies Include="$(MSBuildThisFileDirectory)\Libs\System.Runtime.WindowsRuntime.dll" />-->
       </ItemGroup>
 
       <ItemGroup>

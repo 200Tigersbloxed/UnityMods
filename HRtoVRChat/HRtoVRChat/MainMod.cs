@@ -3,9 +3,9 @@ using System.Collections;
 using System.Linq;
 using MelonLoader;
 using UnityEngine;
-using VRC.SDKBase;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using UnhollowerRuntimeLib;
 
 namespace HRtoVRChat
 {
@@ -17,7 +17,7 @@ namespace HRtoVRChat
         private bool isRestarting = false;
 
         public static Action<int, int, int, int, bool, bool> OnHRValuesUpdated = (ones, tens, hundreds, HR, isConnected, isActive) => { };
-        public static Action<bool> OnHeartBeatUpdate = (isHeartBeat) => { MelonCoroutines.Start(WaitStartHeartBeat()); };
+        public static Action<bool, bool> OnHeartBeatUpdate = (isHeartBeat, shouldStart) => { };
         public static bool isHeartBeat { get; private set; } = false;
 
         private bool isAppClosing = false;
@@ -35,6 +35,14 @@ namespace HRtoVRChat
                 LogHelper.Log("MainMod", $"{modName} loaded!");
             else
                 LogHelper.Error("MainMod", $"Failed to load mod {modName}!");
+        }
+
+        public override void OnApplicationStart()
+        {
+            // Inject Classes
+            ClassInjector.RegisterTypeInIl2Cpp<HookListener>();
+            ClassInjector.RegisterTypeInIl2Cpp<AvatarHook>();
+            base.OnApplicationStart();
         }
 
         public override void OnApplicationLateStart()
@@ -76,20 +84,27 @@ namespace HRtoVRChat
                 int amapiSupported = ModSupport.AMAPI.Init(nbList, AssetManager.loadedAssets.heartbeat);
                 LogSupportedMod("ActionMenuApi", amapiSupported);
             }
-            VRChatUtilityKit.Utilities.NetworkEvents.OnAvatarInstantiated += NetworkEvents_OnAvatarInstantiated;
+            //VRChatUtilityKit.Utilities.NetworkEvents.OnAvatarInstantiated += NetworkEvents_OnAvatarInstantiated;
+            EasyAvatarHook.OnAvatarInstantiated += OnAvatarInstantiatedListener;
+            OnHeartBeatUpdate += (hrb, restart) => { if(restart) MelonCoroutines.Start(WaitStartHeartBeat()); };
             // Start everything else
             Start();
             // based, red-pilled
             base.OnApplicationLateStart();
         }
 
-        private void NetworkEvents_OnAvatarInstantiated(VRCAvatarManager arg1, VRC.Core.ApiAvatar arg2, GameObject arg3)
+        private void OnAvatarInstantiatedListener(GameObject avatar, bool isLocal)
         {
-            VRCPlayerApi papi = arg1.field_Private_VRCPlayer_0.prop_VRCPlayerApi_0;
-            LogHelper.Debug("MainMod", "Avatar Instantiated : " + papi.isLocal);
-            if(papi.isLocal)
-                foreach(ParamsManager.HRParameter param in ParamsManager.Parameters)
+            LogHelper.Debug("MainMod", "Avatar Instantiated: " + isLocal);
+            if(isLocal)
+                foreach (ParamsManager.HRParameter param in ParamsManager.Parameters)
                     param.ResetParam();
+        }
+
+        public override void OnUpdate()
+        {
+            EasyAvatarHook.Update();
+            base.OnUpdate();
         }
 
         public override void OnApplicationQuit()
@@ -174,9 +189,11 @@ namespace HRtoVRChat
                 case "textfile":
                     hrt = HRType.TextFile;
                     break;
+                /*
                 case "win-blegatt":
                     hrt = HRType.WinBLEGATT;
                     break;
+                */
             }
 
             return hrt;
@@ -211,10 +228,12 @@ namespace HRtoVRChat
                     activeHRManager = new HRManagers.TextFileManager();
                     activeHRManager.Init(ConfigHelper.LoadedConfig.textfilelocation);
                     break;
+                /*
                 case HRType.WinBLEGATT:
                     activeHRManager = new HRManagers.WinBLEGATTManager();
                     activeHRManager.Init("");
                     break;
+                */
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
                     break;
@@ -270,21 +289,21 @@ namespace HRtoVRChat
                 if (io)
                 {
                     isHeartBeat = false;
-                    OnHeartBeatUpdate.Invoke(isHeartBeat);
                     // Get HR
                     float HR = activeHRManager.GetHR() - 0.2f;
-                    if (HR > 0 || HR < 0)
+                    if (HR != 0)
                     {
                         isHeartBeat = false;
+                        OnHeartBeatUpdate.Invoke(isHeartBeat, false);
                         // Calculate wait interval
                         float waitTime = default(float);
                         // When lowering the HR significantly, this will cause issues with the beat bool
                         // Dubbed the "Breathing Excersise" bug
                         // There's a 'temp' fix for it right now, but I'm not sure how it'll hold up
-                        try { waitTime = 1 / (HR / 60); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
+                        try { waitTime = (1 / (HR / 60)); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
                         yield return new WaitForSeconds(waitTime);
                         isHeartBeat = true;
-                        OnHeartBeatUpdate.Invoke(isHeartBeat);
+                        OnHeartBeatUpdate.Invoke(isHeartBeat, false);
                     }
                 }
                 else
@@ -292,10 +311,11 @@ namespace HRtoVRChat
                     ParamsManager.HRParameter foundParam = ParamsManager.Parameters.Find(x => x.GetParamName() == "isHRBeat");
                     if (foundParam.GetParamValue() >= 1f)
                     {
-                        OnHeartBeatUpdate.Invoke(isHeartBeat);
+                        isHeartBeat = false;
                     }
                 }
             }
+            OnHeartBeatUpdate.Invoke(isHeartBeat, true);
         }
 
         private currentHRSplit intToHRSplit(int hr)

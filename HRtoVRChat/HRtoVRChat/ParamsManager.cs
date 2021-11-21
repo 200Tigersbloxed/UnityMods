@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-//using ParamLib;
 
 namespace HRtoVRChat
 {
@@ -18,12 +17,13 @@ namespace HRtoVRChat
                 float targetFloat = 0f;
                 float maxhr = (float)ConfigHelper.LoadedConfig.MaxHR;
                 float minhr = (float)ConfigHelper.LoadedConfig.MinHR;
-                if(maxhr > hro.HR)
+                float HR = (float)hro.HR;
+                if(HR > maxhr)
                     targetFloat = 1;
-                else if(minhr < hro.HR)
+                else if(HR < minhr)
                     targetFloat = 0;
                 else
-                    targetFloat = (hro.HR - minhr) / maxhr;
+                    targetFloat = (HR - minhr) / maxhr;
                 return targetFloat;
             }, "HRPercent", false)
         };
@@ -83,12 +83,12 @@ namespace HRtoVRChat
             {
                 SetParamName = parameterName;
                 LogHelper.Debug("ParamsManager", $"BoolParameter with ParameterName: {parameterName} and BoolCheckType of: {bct}, has been created!");
-                MainMod.OnHeartBeatUpdate += (isHeartBeat) =>
+                MainMod.OnHeartBeatUpdate += (isHeartBeat, shouldRestart) =>
                 {
                     switch (bct)
                     {
                         case BoolCheckType.HeartBeat:
-                            ParamValue = MainMod.isHeartBeat;
+                            ParamValue = isHeartBeat;
                             break;
                     }
                 };

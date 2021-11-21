@@ -6,22 +6,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="HRManagers\WinBLEGATTManager.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="hrtovrchat" />
-    <None Remove="Libs\GenericHRLib.dll" />
-    <None Remove="Libs\GenericHRLib.pdb" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="hrtovrchat">
       <CustomToolNamespace>HRtoVRChat</CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="Libs\GenericHRLib.dll">
-      <CustomToolNamespace>HRtoVRChat</CustomToolNamespace>
-      <Generator></Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Libs\GenericHRLib.pdb">
-      <CustomToolNamespace>HRtoVRChat</CustomToolNamespace>
-    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="HRManagers\WinBLEGATTManager.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,9 +64,6 @@
     <Reference Include="VRCCore-Standalone">
       <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCCore-Standalone.dll</HintPath>
     </Reference>
-    <Reference Include="VRChatUtilityKit">
-      <HintPath>D:\Steam\steamapps\common\VRChat\Mods\VRChatUtilityKit.dll</HintPath>
-    </Reference>
     <Reference Include="VRCSDK3A">
       <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCSDK3A.dll</HintPath>
     </Reference>
@@ -77,6 +73,16 @@
     <Reference Include="websocket-sharp">
       <HintPath>..\..\HypeRate.NET\HypeRate.NET\bin\Release\net48\websocket-sharp.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Libs\GenericHRLib.dll">
+      <CustomToolNamespace>HRtoVRChat</CustomToolNamespace>
+      <Generator></Generator>
+    </None>
+    <None Update="Libs\GenericHRLib.pdb">
+      <CustomToolNamespace>HRtoVRChat</CustomToolNamespace>
+    </None>
   </ItemGroup>
 
 </Project>
