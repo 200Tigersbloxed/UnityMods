@@ -90,7 +90,7 @@ namespace HRtoVRChat
 
         void OnDisable()
         {
-            LogHelper.Log("HookListener", "Unhooked user!");
+            LogHelper.Debug("HookListener", "Unhooked user!");
             EasyAvatarHook.OnPlayerLeft.Invoke(cached_vrcplayer);
             if (EasyAvatarHook.HookedUsers.Contains(this.gameObject))
                 EasyAvatarHook.HookedUsers.Remove(this.gameObject);
