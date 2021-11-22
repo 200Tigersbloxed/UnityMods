@@ -290,7 +290,7 @@ namespace HRtoVRChat
                 {
                     isHeartBeat = false;
                     // Get HR
-                    float HR = activeHRManager.GetHR() - 0.2f;
+                    float HR = activeHRManager.GetHR();
                     if (HR != 0)
                     {
                         isHeartBeat = false;
@@ -300,7 +300,7 @@ namespace HRtoVRChat
                         // When lowering the HR significantly, this will cause issues with the beat bool
                         // Dubbed the "Breathing Excersise" bug
                         // There's a 'temp' fix for it right now, but I'm not sure how it'll hold up
-                        try { waitTime = (1 / (HR / 60)); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
+                        try { waitTime = (1 / ((HR - 0.2f) / 60)); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
                         yield return new WaitForSeconds(waitTime);
                         isHeartBeat = true;
                         OnHeartBeatUpdate.Invoke(isHeartBeat, false);
