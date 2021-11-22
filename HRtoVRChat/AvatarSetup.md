@@ -4,7 +4,7 @@ The HRtoVRChat-Prefab (which can be found on the Latest Release Artifacts for HR
 
 **ATTENTION**
 
-This guide assumes that you have *basic Animation/Animator Controller* knowledge in Unity. Please see the following guide for learning Animation and ANimator Controllers in Unity:
+This guide assumes that you have *basic Animation/Animator Controller* knowledge in Unity. Please see the following guides for learning Animation and Animator Controllers in Unity:
 
 https://learn.unity.com/course/introduction-to-3d-animation-systems
 
@@ -30,13 +30,16 @@ The Expression Menu for the avatar. This is not required, if you'd like to repla
 
 ## hrEP
 
-The Expression Parameters are required for the avatar. If you'd like to use your parameters, below is a table of the required parameters
+The Expression Parameters are required for the avatar. If you'd like to use your parameters, below is a table of the parameters and descriptions.
 
-| Parameter Name | Parameter Type | Parameter Default | Parameter Saved |
-|----------------|----------------|-------------------|-----------------|
-| onesHR         | `int`          | 0                 | false           |
-| tensHR         | `int`          | 0                 | false           |
-| hundredsHR     | `int`          | 0                 | false           |
+| Parameter Name | Parameter Type | Parameter Default | Parameter Saved | Description                                                   |
+|----------------|----------------|-------------------|-----------------|---------------------------------------------------------------|
+| onesHR         | `int`          | 0                 | false           | Ones spot in the Heart Rate reading; 12**3** *(required)*     |
+| tensHR         | `int`          | 0                 | false           | Tens spot in the Heart Rate reading; 1**2**3 *(required)*     |
+| hundredsHR     | `int`          | 0                 | false           | Hundreds spot in the Heart Rate reading; **1**23 *(required)* |
+| isHRConnected  | `bool`         | false             | false           | Returns whether the watch and connection are valid or not     |
+| isHRBeat       | `bool`         | false             | false           | Estimation on when the heart is beating                       |
+| HRPercent      | `bool`         | false             | false           | Range of HR between the MinHR and MaxHR config value          |
 
 ## hr/HRTestingMaterial
 
