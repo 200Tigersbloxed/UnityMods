@@ -39,7 +39,7 @@ The Expression Parameters are required for the avatar. If you'd like to use your
 | hundredsHR     | `int`          | 0                 | false           | Hundreds spot in the Heart Rate reading; **1**23 *(required)* |
 | isHRConnected  | `bool`         | false             | false           | Returns whether the watch and connection are valid or not     |
 | isHRBeat       | `bool`         | false             | false           | Estimation on when the heart is beating                       |
-| HRPercent      | `bool`         | false             | false           | Range of HR between the MinHR and MaxHR config value          |
+| HRPercent      | `float`        | false             | false           | Range of HR between the MinHR and MaxHR config value          |
 
 ## hr/HRTestingMaterial
 
