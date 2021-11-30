@@ -5,7 +5,6 @@ using MelonLoader;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using UnhollowerRuntimeLib;
 
 namespace HRtoVRChat
 {
@@ -35,14 +34,6 @@ namespace HRtoVRChat
                 LogHelper.Log("MainMod", $"{modName} loaded!");
             else
                 LogHelper.Error("MainMod", $"Failed to load mod {modName}!");
-        }
-
-        public override void OnApplicationStart()
-        {
-            // Inject Classes
-            ClassInjector.RegisterTypeInIl2Cpp<HookListener>();
-            ClassInjector.RegisterTypeInIl2Cpp<AvatarHook>();
-            base.OnApplicationStart();
         }
 
         public override void OnApplicationLateStart()

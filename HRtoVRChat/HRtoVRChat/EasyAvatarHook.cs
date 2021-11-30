@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MelonLoader;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -47,6 +48,7 @@ namespace HRtoVRChat
         }
     }
 
+    [RegisterTypeInIl2Cpp]
     class HookListener : MonoBehaviour
     {
         public HookListener(IntPtr ptr) : base(ptr) { }
@@ -102,6 +104,7 @@ namespace HRtoVRChat
         }
     }
 
+    [RegisterTypeInIl2Cpp]
     class AvatarHook : MonoBehaviour
     {
         public AvatarHook(IntPtr ptr) : base(ptr) { }
