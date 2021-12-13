@@ -25,7 +25,18 @@ namespace HRtoVRChat
                 else
                     targetFloat = (HR - minhr) / maxhr;
                 return targetFloat;
-            }, "HRPercent", false)
+            }, "HRPercent", false),
+            new IntParameter((hro) =>
+            {
+                string HRstring = $"{hro.hundreds}{hro.tens}{hro.ones}";
+                int HR = 0;
+                try{HR = Convert.ToInt32(HRstring); }catch(Exception){}
+                if(HR > 255)
+                    HR = 255;
+                if(HR < 0)
+                    HR = 0;
+                return HR;
+            }, "HR")
         };
 
         public class IntParameter : ParamLib.IntBaseParam, HRParameter

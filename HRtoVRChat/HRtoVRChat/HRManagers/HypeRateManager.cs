@@ -28,6 +28,8 @@ namespace HRtoVRChat.HRManagers
             return IsConnected;
         }
 
+        int senderror = 0;
+
         private async Task SendMessage(string message)
         {
             if (cws != null)
@@ -35,20 +37,50 @@ namespace HRtoVRChat.HRManagers
                 if (cws.State == WebSocketState.Open)
                 {
                     byte[] sendBody = Encoding.UTF8.GetBytes(message);
-                    await cws.SendAsync(new ArraySegment<byte>(sendBody), WebSocketMessageType.Text, true, CancellationToken.None);
+                    try
+                    {
+                        await cws.SendAsync(new ArraySegment<byte>(sendBody), WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
+                    catch (Exception e) 
+                    {
+                        LogHelper.Error("HypeRateManager", "Failed to SendMessage to HypeRate server! Exception:" + e);
+                        senderror++;
+                        if (senderror > 15)
+                        {
+                            await Close();
+                            LogHelper.Warn("HypeRateManager", "Too many errors while trying to send a message. Closed Socket.");
+                        }
+                    }
                 }
             }
         }
 
+        int receiveerror = 0;
         private async Task<string> ReceiveMessage()
         {
             var clientbuffer = new ArraySegment<byte>(new byte[1024]);
-            WebSocketReceiveResult result = await cws.ReceiveAsync(clientbuffer, CancellationToken.None);
-            if (result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
+            WebSocketReceiveResult result = null;
+            try
             {
-                string msg = Encoding.ASCII.GetString(clientbuffer.Array);
-                return msg;
+                result = await cws.ReceiveAsync(clientbuffer, CancellationToken.None);
             }
+            catch(Exception e)
+            {
+                LogHelper.Error("HypeRateManager", "Failed to Receive Message from HypeRate server! Exception: " + e);
+                receiveerror++;
+                if (receiveerror > 15)
+                {
+                    await Close();
+                    LogHelper.Warn("HypeRateManager", "Too many errors while trying to receive a message. Closed Socket.");
+                }
+            }
+            // Only check if result is not null
+            if(result != null)
+                if (result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
+                {
+                    string msg = Encoding.ASCII.GetString(clientbuffer.Array);
+                    return msg;
+                }
             return String.Empty;
         }
 
@@ -89,29 +121,39 @@ namespace HRtoVRChat.HRManagers
             {
                 IL2CPP.il2cpp_thread_attach(IL2CPP.il2cpp_domain_get());
                 cws = new ClientWebSocket();
-                await cws.ConnectAsync(new Uri("wss://app.hyperate.io/socket/websocket"), CancellationToken.None);
-                IsConnected = cws.State == WebSocketState.Open;
-                if (IsConnected)
-                    await SendMessage(GenerateSessionJson(id));
-                int i = 0;
-                while (shouldOpen && cws.State == WebSocketState.Open)
+                bool noerror = true;
+                try
                 {
-                    if (i >= 1500)
+                    await cws.ConnectAsync(new Uri("wss://app.hyperate.io/socket/websocket"), CancellationToken.None);
+                }
+                catch(Exception e)
+                {
+                    LogHelper.Error("HypeRateManager", "Failed to connect to HypeRate server! Exception: " + e);
+                    noerror = false;
+                }
+                if (noerror)
+                {
+                    IsConnected = cws.State == WebSocketState.Open;
+                    if (IsConnected)
+                        await SendMessage(GenerateSessionJson(id));
+                    int i = 0;
+                    while (shouldOpen && cws.State == WebSocketState.Open)
                     {
-                        await SendMessage("{\"topic\": \"phoenix\",\"event\": \"heartbeat\",\"payload\": {},\"ref\": 123456}");
-                        i = 0;
+                        if (i >= 1500)
+                        {
+                            await SendMessage("{\"topic\": \"phoenix\",\"event\": \"heartbeat\",\"payload\": {},\"ref\": 123456}");
+                            i = 0;
+                        }
+                        else
+                            i++;
+                        string message = await ReceiveMessage();
+                        if (!string.IsNullOrEmpty(message))
+                            HandleMessage(message);
+                        Thread.Sleep(10);
                     }
-                    else
-                        i++;
-                    string message = await ReceiveMessage();
-                    if (!string.IsNullOrEmpty(message))
-                        HandleMessage(message);
-                    Thread.Sleep(10);
                 }
                 await Close();
                 LogHelper.Log("HypeRateManager", "Closed HypeRate");
-                IsConnected = false;
-                cws = null;
                 _thread.Abort();
             });
             _thread.Start();
@@ -123,7 +165,17 @@ namespace HRtoVRChat.HRManagers
         {
             if (cws != null)
                 if (cws.State == WebSocketState.Open)
-                    await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
+                    try
+                    {
+                        await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
+                        IsConnected = false;
+                        cws.Dispose();
+                        cws = null;
+                    }
+                    catch(Exception e)
+                    {
+                        LogHelper.Error("HypeRateManager", "Failed to close connection to HypeRate Server! Exception: " + e);
+                    }
                 else
                     LogHelper.Warn("HypeRateManager", "WebSocket is not alive! Did you mean to Dispose()?");
             else

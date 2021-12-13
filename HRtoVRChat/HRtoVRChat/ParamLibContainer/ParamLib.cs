@@ -23,7 +23,7 @@ namespace ParamLib
                 XrefScanner.UsedBy(xrefs.TryResolve()).Any(i => i.TryResolve().Name == "OnEnable")));
 
         private static readonly MethodInfo SetMethod = typeof(AvatarPlayableController).GetMethods().First(m =>
-            m.Name.Contains("Boolean_Int32_Single") &&
+            m.Name.Contains("Boolean_Int32_Single") && !m.Name.Contains("PDM") &&
             XrefScanner.UsedBy(m).All(inst => inst.Type == XrefType.Method && inst.TryResolve()?.DeclaringType == typeof(AvatarPlayableController)));
 
         public static void PrioritizeParameter(int paramIndex)

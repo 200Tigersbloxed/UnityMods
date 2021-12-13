@@ -25,31 +25,62 @@ namespace HRtoVRChat.HRManagers
             return IsConnected;
         }
 
+        int sendreceiveeror = 0;
         private async Task SendAndReceiveMessage(string message)
         {
             if(cws != null)
             {
                 if(cws.State == WebSocketState.Open)
                 {
+                    bool didSend = false;
+                    bool didReceive = false;
+
                     byte[] sendBody = Encoding.UTF8.GetBytes(message);
-                    await cws.SendAsync(new ArraySegment<byte>(sendBody), WebSocketMessageType.Text, true, CancellationToken.None);
-                    var clientbuffer = new ArraySegment<byte>(new byte[1024]);
-                    WebSocketReceiveResult result = await cws.ReceiveAsync(clientbuffer, CancellationToken.None);
-                    if(result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
+                    try
                     {
-                        string msg = Encoding.ASCII.GetString(clientbuffer.Array);
-                        switch (msg.ToLower())
+                        await cws.SendAsync(new ArraySegment<byte>(sendBody), WebSocketMessageType.Text, true, CancellationToken.None);
+                        didSend = true;
+                    }
+                    catch(Exception e)
+                    {
+                        LogHelper.Error("FitbitManager", "Failed to Send Message to Fitbit Server! Exception: " + e);
+                    }
+                    var clientbuffer = new ArraySegment<byte>(new byte[1024]);
+                    WebSocketReceiveResult result = null;
+                    try
+                    {
+                        result = await cws.ReceiveAsync(clientbuffer, CancellationToken.None);
+                        didReceive = true;
+                    }
+                    catch(Exception e)
+                    {
+                        LogHelper.Error("FitbitManager", "Failed to Recieve Message from Fitbit Server! Exception: " + e);
+                    }
+                    if(result != null)
+                        if (result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
                         {
-                            case "yes":
-                                FitbitIsConnected = true;
-                                break;
-                            case "no":
-                                FitbitIsConnected = false;
-                                break;
-                            default:
-                                // Assume it's the HeartRate
-                                try { HR = Convert.ToInt32(msg); } catch (Exception) { }
-                                break;
+                            string msg = Encoding.ASCII.GetString(clientbuffer.Array);
+                            switch (msg.ToLower())
+                            {
+                                case "yes":
+                                    FitbitIsConnected = true;
+                                    break;
+                                case "no":
+                                    FitbitIsConnected = false;
+                                    break;
+                                default:
+                                    // Assume it's the HeartRate
+                                    try { HR = Convert.ToInt32(msg); } catch (Exception) { }
+                                    break;
+                            }
+                        }
+                    if(!(didSend && didReceive))
+                    {
+                        sendreceiveeror++;
+                        if(sendreceiveeror >= 15)
+                        {
+                            await Close();
+                            LogHelper.Warn("FitbitManager", "Failed to Send and Receive message too many times! Closed Socket.");
                         }
                     }
                 }
@@ -62,17 +93,27 @@ namespace HRtoVRChat.HRManagers
             {
                 IL2CPP.il2cpp_thread_attach(IL2CPP.il2cpp_domain_get());
                 cws = new ClientWebSocket();
-                await cws.ConnectAsync(new Uri(url), CancellationToken.None);
-                IsConnected = cws.State == WebSocketState.Open;
-                while (shouldOpen && cws.State == WebSocketState.Open)
+                bool noerror = true;
+                try
                 {
-                    await SendAndReceiveMessage("getHR");
-                    await SendAndReceiveMessage("checkFitbitConnection");
-                    Thread.Sleep(500);
+                    await cws.ConnectAsync(new Uri(url), CancellationToken.None);
+                }
+                catch(Exception e)
+                {
+                    LogHelper.Error("FitbitManager", "Failed to connect to Fitbit Server! Exception: " + e);
+                    noerror = false;
+                }
+                if (noerror)
+                {
+                    IsConnected = cws.State == WebSocketState.Open;
+                    while (shouldOpen && cws.State == WebSocketState.Open)
+                    {
+                        await SendAndReceiveMessage("getHR");
+                        await SendAndReceiveMessage("checkFitbitConnection");
+                        Thread.Sleep(500);
+                    }
                 }
                 await Close();
-                IsConnected = false;
-                cws = null;
                 _thread.Abort();
             });
             _thread.Start();
@@ -84,7 +125,17 @@ namespace HRtoVRChat.HRManagers
         {
             if (cws != null)
                 if (cws.State == WebSocketState.Open)
-                    await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client Disconnect", CancellationToken.None);
+                    try
+                    {
+                        await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client Disconnect", CancellationToken.None);
+                        IsConnected = false;
+                        cws.Dispose();
+                        cws = null;
+                    }
+                    catch(Exception e)
+                    {
+                        LogHelper.Error("FitbitManager", "Failed to Close connection with the Fitbit Server! Exception: " + e);
+                    }
                 else
                     LogHelper.Warn("FitbitManager", "WebSocket is not alive! Did you mean to Dispose()?");
             else
