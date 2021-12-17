@@ -32,14 +32,15 @@ The Expression Menu for the avatar. This is not required, if you'd like to repla
 
 The Expression Parameters are required for the avatar. If you'd like to use your parameters, below is a table of the parameters and descriptions.
 
-| Parameter Name | Parameter Type | Parameter Default | Parameter Saved | Description                                                   |
-|----------------|----------------|-------------------|-----------------|---------------------------------------------------------------|
-| onesHR         | `int`          | 0                 | false           | Ones spot in the Heart Rate reading; 12**3** *(required)*     |
-| tensHR         | `int`          | 0                 | false           | Tens spot in the Heart Rate reading; 1**2**3 *(required)*     |
-| hundredsHR     | `int`          | 0                 | false           | Hundreds spot in the Heart Rate reading; **1**23 *(required)* |
-| isHRConnected  | `bool`         | false             | false           | Returns whether the watch and connection are valid or not     |
-| isHRBeat       | `bool`         | false             | false           | Estimation on when the heart is beating                       |
-| HRPercent      | `float`        | false             | false           | Range of HR between the MinHR and MaxHR config value          |
+| Parameter Name | Parameter Type | Parameter Default | Parameter Saved | Description                                                                           |
+|----------------|----------------|-------------------|-----------------|---------------------------------------------------------------------------------------|
+| onesHR         | `int`          | 0                 | false           | Ones spot in the Heart Rate reading; 12**3** *(required)*                             |
+| tensHR         | `int`          | 0                 | false           | Tens spot in the Heart Rate reading; 1**2**3 *(required)*                             |
+| hundredsHR     | `int`          | 0                 | false           | Hundreds spot in the Heart Rate reading; **1**23 *(required)*                         |
+| isHRConnected  | `bool`         | false             | false           | Returns whether the watch and connection are valid or not                             |
+| isHRBeat       | `bool`         | false             | false           | Estimation on when the heart is beating                                               |
+| HRPercent      | `float`        | false             | false           | Range of HR between the MinHR and MaxHR config value                                  |
+| HR             | `int`          | 0                 | false           | Returns the raw HR, ranged from 0 - 255. (Not Officially Supported; do what you want) |
 
 ## hr/HRTestingMaterial
 
