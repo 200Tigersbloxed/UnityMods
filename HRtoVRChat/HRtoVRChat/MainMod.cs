@@ -135,11 +135,12 @@ namespace HRtoVRChat
             isAppClosing = true;
             // Stop MelonCoroutine
             UpdateIENum = false;
-            MelonCoroutines.Stop(BoopUwU());
+            if(activeHRManager != null)
+                MelonCoroutines.Stop(BoopUwU());
             // Stop HR Listener
             StopHRListener();
-            // Clear IntParameters
-            ParamsManager.Parameters.Clear();
+            // Clear IntParameters no point in doing this
+            // ParamsManager.Parameters.Clear();
         }
 
         private void RestartHRListener()
@@ -245,6 +246,7 @@ namespace HRtoVRChat
             activeHRManager = null;
         }
 
+        // why did i name the ienumerator this and why haven't i changed it
         IEnumerator BoopUwU()
         {
             currentHRSplit chs = new currentHRSplit();
