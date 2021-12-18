@@ -13,7 +13,7 @@ namespace HRtoVRChat.HRManagers
         private Thread _thread;
         private bool shouldOpen = false;
 
-        private bool IsConnected = false;
+        private bool IsConnected => cws?.State == WebSocketState.Open;
         public bool FitbitIsConnected { get; private set; } = false;
         public int HR { get; private set; } = 0;
 
@@ -60,19 +60,12 @@ namespace HRtoVRChat.HRManagers
                         if (result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
                         {
                             string msg = Encoding.ASCII.GetString(clientbuffer.Array);
-                            switch (msg.ToLower())
-                            {
-                                case "yes":
-                                    FitbitIsConnected = true;
-                                    break;
-                                case "no":
-                                    FitbitIsConnected = false;
-                                    break;
-                                default:
-                                    // Assume it's the HeartRate
-                                    try { HR = Convert.ToInt32(msg); } catch (Exception) { }
-                                    break;
-                            }
+                            if (msg.Contains("yes"))
+                                FitbitIsConnected = true;
+                            else if (msg.Contains("no"))
+                                FitbitIsConnected = false;
+                            else
+                                try { HR = Convert.ToInt32(msg); } catch (Exception) { }
                         }
                     if(!(didSend && didReceive))
                     {
@@ -105,8 +98,7 @@ namespace HRtoVRChat.HRManagers
                 }
                 if (noerror)
                 {
-                    IsConnected = cws.State == WebSocketState.Open;
-                    while (shouldOpen && cws.State == WebSocketState.Open)
+                    while (shouldOpen && IsConnected)
                     {
                         await SendAndReceiveMessage("getHR");
                         await SendAndReceiveMessage("checkFitbitConnection");
@@ -128,7 +120,6 @@ namespace HRtoVRChat.HRManagers
                     try
                     {
                         await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client Disconnect", CancellationToken.None);
-                        IsConnected = false;
                         cws.Dispose();
                         cws = null;
                     }

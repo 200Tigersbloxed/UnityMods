@@ -17,7 +17,7 @@ namespace HRtoVRChat.HRManagers
         private Thread _thread;
         private bool shouldOpen = false;
 
-        private bool IsConnected = false;
+        private bool IsConnected => cws?.State == WebSocketState.Open;
         public int HR { get; private set; } = 0;
 
         public bool Init(string id)
@@ -27,6 +27,8 @@ namespace HRtoVRChat.HRManagers
             LogHelper.Log("HypeRateManager", "Initialized WebSocket!");
             return IsConnected;
         }
+
+        private bool didSendJsonMessage = false;
 
         int senderror = 0;
 
@@ -133,12 +135,14 @@ namespace HRtoVRChat.HRManagers
                 }
                 if (noerror)
                 {
-                    IsConnected = cws.State == WebSocketState.Open;
-                    if (IsConnected)
-                        await SendMessage(GenerateSessionJson(id));
                     int i = 0;
-                    while (shouldOpen && cws.State == WebSocketState.Open)
+                    while (shouldOpen && IsConnected)
                     {
+                        if(IsConnected && !didSendJsonMessage)
+                        {
+                            await SendMessage(GenerateSessionJson(id));
+                            didSendJsonMessage = true;
+                        }
                         if (i >= 1500)
                         {
                             await SendMessage("{\"topic\": \"phoenix\",\"event\": \"heartbeat\",\"payload\": {},\"ref\": 123456}");
@@ -168,7 +172,7 @@ namespace HRtoVRChat.HRManagers
                     try
                     {
                         await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
-                        IsConnected = false;
+                        didSendJsonMessage = false;
                         cws.Dispose();
                         cws = null;
                     }

@@ -139,8 +139,6 @@ namespace HRtoVRChat
                 MelonCoroutines.Stop(BoopUwU());
             // Stop HR Listener
             StopHRListener();
-            // Clear IntParameters no point in doing this
-            // ParamsManager.Parameters.Clear();
         }
 
         private void RestartHRListener()
@@ -250,19 +248,15 @@ namespace HRtoVRChat
         IEnumerator BoopUwU()
         {
             currentHRSplit chs = new currentHRSplit();
-            bool isOpen = false;
-            bool isActive = false;
-            // Get HR
-            int HR = 0;
             if (activeHRManager != null)
             {
-                HR = activeHRManager.GetHR();
-                isOpen = activeHRManager.IsOpen();
-                isActive = activeHRManager.IsActive();
+                int HR = activeHRManager.GetHR();
+                bool isOpen = activeHRManager.IsOpen();
+                bool isActive = activeHRManager.IsActive();
                 // Cast to currentHRSplit
                 chs = intToHRSplit(HR);
+                OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, HR, isOpen, isActive);
             }
-            OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, HR, isOpen, isActive);
             yield return new WaitForSeconds(1);
             if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
         }
