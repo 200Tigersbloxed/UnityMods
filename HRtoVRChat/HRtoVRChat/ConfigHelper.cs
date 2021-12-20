@@ -64,10 +64,10 @@ namespace HRtoVRChat
                         newConfig.AMAPISupport = Convert.ToBoolean(mpe.GetValueAsString());
                         break;
                     case "maxhr":
-                        newConfig.MaxHR = Convert.ToDouble(mpe.GetDefaultValueAsString());
+                        newConfig.MaxHR = Convert.ToDouble(mpe.GetValueAsString());
                         break;
                     case "minhr":
-                        newConfig.MinHR = Convert.ToDouble(mpe.GetDefaultValueAsString());
+                        newConfig.MinHR = Convert.ToDouble(mpe.GetValueAsString());
                         break;
                 }
             }

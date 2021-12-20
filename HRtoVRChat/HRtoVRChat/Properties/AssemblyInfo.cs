@@ -18,6 +18,6 @@ using HRtoVRChat;
 
 [assembly: Guid("e60e13d3-e714-4d88-af0d-7df285f13178")]
 
-[assembly: MelonInfo(typeof(MainMod), "HRtoVRChat", "1.4.3", "200Tigersbloxed")]
+[assembly: MelonInfo(typeof(MainMod), "HRtoVRChat", "1.4.4", "200Tigersbloxed")]
 [assembly: MelonGame("VRChat", "VRChat")]
 [assembly: MelonOptionalDependencies(new string[] { "UIExpansionKit", "ActionMenuApi", "Windows.Foundation.FoundationContract", "Windows.Foundation.UniversalApiContract" })]
