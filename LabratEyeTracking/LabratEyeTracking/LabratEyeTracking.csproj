@@ -13,8 +13,8 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\BepInEx\core\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="Managed-PVR">
       <HintPath>..\..\..\UnitySaves\pimaxETSDK\Assets\Plugins\Managed-PVR.dll</HintPath>
@@ -25,17 +25,17 @@
     <Reference Include="System.Buffers">
       <HintPath>..\..\..\UnityPackageExtractor\Assets\Glia\Plugins\System.Buffers.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
 

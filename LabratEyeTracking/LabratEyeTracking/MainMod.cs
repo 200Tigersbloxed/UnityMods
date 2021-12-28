@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
@@ -9,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace LabratEyeTracking
 {
-    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.2.0")]
+    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.2.1")]
     [BepInProcess("SCP Labrat.exe")]
     class MainMod : BaseUnityPlugin
     {
@@ -69,13 +67,6 @@ namespace LabratEyeTracking
             }
         }
 
-        IEnumerator StartEyeCoroutine()
-        {
-            LogHelper.Debug("Setting up Scene Values in 2 seconds...");
-            yield return new WaitForSeconds(2);
-            SetupEyeValues();
-        }
-
         void SetupEyeValues()
         {
             PlayerModel = GameHelper.FindPlayerModel();
@@ -89,12 +80,12 @@ namespace LabratEyeTracking
 
         void Update()
         {
-            // Verify the EyeTracking is active
-            if (currentEyeTrackingRuntime.EyeTrackingEnabled)
+            if (GameHelper.IsGameScene(TryGetScene()))
             {
-                // Check if the user is blinking
-                if (GameHelper.IsGameScene(TryGetScene()))
+                // Verify the EyeTracking is active
+                if (currentEyeTrackingRuntime.EyeTrackingEnabled)
                 {
+                    // Check if the user is blinking
                     if (BlinkComponent != null)
                     {
                         // set the UI text soon
@@ -124,7 +115,7 @@ namespace LabratEyeTracking
                 if (GameHelper.IsGameScene(scene))
                 {
                     SubscribeEyeData = false;
-                    StartCoroutine(StartEyeCoroutine());
+                    SetupEyeValues();
                 }
                 else
                 {
