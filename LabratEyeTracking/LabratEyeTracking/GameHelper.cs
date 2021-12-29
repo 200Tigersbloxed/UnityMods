@@ -42,13 +42,8 @@ namespace LabratEyeTracking
             blinkcomponent.blinkingEnabled = false; blinkcomponent.fadeIn = 0;
             blinkcomponent.fadeOut = 0;
         }
-        public static bool IsGameScene(Scene scene)
-        {
-            bool valToReturn = false;
-            if (scene.name == "Game") { valToReturn = true; }
 
-            return valToReturn;
-        }
+        public static bool IsGameScene(Scene scene) => scene.name == "Game";
 
         // soon
         /*

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using ViveSR;
 using ViveSR.anipal;
 using ViveSR.anipal.Eye;
@@ -15,31 +16,37 @@ namespace LabratEyeTracking
     public class SRanipalHelper : IEyeTracking
     {
         public bool EyeTrackingEnabled { get; set; } = false;
-        private bool VerifyEyeError(Error error) => error != Error.WORK && error != Error.UNDEFINED && error != (Error)1051;
         private Thread SRanipalWorker;
 
         public static EyeData_v2 EyeData;
 
         public void Init()
         {
-            if (EyeTrackingEnabled)
+            if (!EyeTrackingEnabled)
             {
-                LogHelper.Warn("SRanipal was already active, restarting... Please wait 5 seconds.");
-                SRanipal_API.Release(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2);
-                Thread.Sleep(5000);
+                StartThread();
             }
-            StartThread();
+            else
+                LogHelper.Warn("SRanipal is already initialized!");
         }
 
         public void StartThread()
         {
-            SRanipalWorker = new Thread(delegate()
+            SRanipalWorker = new Thread(() =>
             {
-                Error eyeError = Error.UNDEFINED;
-                eyeError = SRanipal_API.Initial(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2, IntPtr.Zero);
-
-                if (VerifyEyeError(eyeError)) { LogHelper.Error("Failed to Initialize SRanipal Eye Tracking! EXCEPTION: " + eyeError.ToString()); return; }
-                LogHelper.Debug("SRanipal Eye Tracking Initialized!"); EyeTrackingEnabled = true;
+                LogHelper.Debug("Initializing SRanipal SDK...");
+                EyeTrackingEnabled = true;
+                try
+                {
+                    SRanipal_API.Initial(SRanipal_Eye_v2.ANIPAL_TYPE_EYE_V2, IntPtr.Zero);
+                    LogHelper.Debug("SRanipal Eye Tracking Initialized!");
+                }
+                catch (Exception e)
+                {
+                    EyeTrackingEnabled = false;
+                    LogHelper.Error("Failed to Initialize SRanipal Eye Tracking! EXCEPTION: " + e);
+                    return;
+                }
                 while (EyeTrackingEnabled)
                 {
                     UpdateEyeData();
@@ -88,6 +95,8 @@ namespace LabratEyeTracking
                 };
                 UniversalEyeData.UpdateLeftEyeData(LeftEye);
                 UniversalEyeData.UpdateRightEyeData(RightEye);
+                MainMod.OnEyeDataUpdate.Invoke(UniversalEyeData.LeftEye, UniversalEyeData.RightEye,
+                    UniversalEyeData.CombinedEye);
             }
         }
     }

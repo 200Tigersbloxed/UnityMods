@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
@@ -7,26 +9,27 @@ using UnityEngine.SceneManagement;
 
 namespace LabratEyeTracking
 {
-    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.2.1")]
+    [BepInPlugin("lol.fortnite.www.labrateyetracking", "LabratEyeTracking", "1.2.2")]
     [BepInProcess("SCP Labrat.exe")]
     class MainMod : BaseUnityPlugin
     {
-        private bool SubscribeEyeData = false;
-
         // Cache values so we don't waste CPU getting them
         private GameObject PlayerModel = null;
         private GameObject BlinkContainer = null;
-        private Activateblink BlinkComponent = null;
+        private static Activateblink BlinkComponent = null;
         private Scene currentScene;
+
+        public static Action<Eye, Eye, Eye> OnEyeDataUpdate = (leftEye, rightEye, combinedEye) => { };
 
         // Config Values
         private ConfigEntry<int> sdkType;
 
         // IEyeTracking Stuff
-        private IEyeTracking currentEyeTrackingRuntime = null;
+        public static IEyeTracking currentEyeTrackingRuntime = null;
 
         void Awake()
         {
+            HarmonyHelper.Patch();
             // Load Config
             sdkType = Config.Bind(new ConfigDefinition("SDK", "SDKs Configuration"), 0);
             // Get unmanaged assemblies where they need to be
@@ -39,12 +42,10 @@ namespace LabratEyeTracking
             {
                 case 1:
                     // Start the SRanipal SDK
-                    LogHelper.Debug("Initializing SRanipal SDK...");
                     currentEyeTrackingRuntime = new SRanipalHelper();
                     break;
                 case 2:
                     // Start the Pimax Eye Tracker
-                    LogHelper.Debug("Initializing Pimax Eye Tracking...");
                     currentEyeTrackingRuntime = new PimaxHelper();
                     break;
                 default:
@@ -54,8 +55,38 @@ namespace LabratEyeTracking
                     LogHelper.Warn("Set the Value to 1 for SRanipal, or set the value to 2 for Pimax");
                     break;
             }
-            if (currentEyeTrackingRuntime != null)
-                currentEyeTrackingRuntime.Init();
+            // Events
+            OnEyeDataUpdate += (leftEye, rightEye, combinedEye) =>
+            {
+                if (GameHelper.IsGameScene(TryGetScene()))
+                {
+                    // Verify the EyeTracking is active
+                    if (currentEyeTrackingRuntime.EyeTrackingEnabled)
+                    {
+                        // Check if the user is blinking
+                        if (BlinkComponent != null)
+                        {
+                            // set the UI text soon
+                            //GameHelper.SetUILabelText(SRanipalHelper.EyeData.verbose_data.combined.eye_data.eye_openness.ToString());
+                            // Left and Right are separate, because combined wasn't working for me
+                            if (combinedEye.Widen <= 0.4f)
+                            {
+                                Blinking.UpdateWaitTime(BlinkComponent, Mathf.Infinity);
+                                if (!Blinking.IsBlinking) { Blinking.CloseEyes(BlinkComponent); }
+                            }
+                            else
+                            {
+                                BlinkComponent.waitBetween = 0;
+                                if (Blinking.IsBlinking) { Blinking.OpenEyes(BlinkComponent); }
+                            }
+                        }
+                        else
+                        {
+                            LogHelper.Warn("Blink Component is null!");
+                        }
+                    }
+                }
+            };
         }
 
         void OnApplicationQuit()
@@ -72,38 +103,10 @@ namespace LabratEyeTracking
             PlayerModel = GameHelper.FindPlayerModel();
             BlinkContainer = GameHelper.FindBlinkContainer(PlayerModel);
             BlinkComponent = GameHelper.GetBlinkComponent(BlinkContainer);
-            if(sdkType.Value != 0) { GameHelper.SetupBlinkComponent(BlinkComponent); SubscribeEyeData = true; }
+            if(sdkType.Value != 0) { GameHelper.SetupBlinkComponent(BlinkComponent); }
             // soon
             //GameHelper.SetupUI();
             LogHelper.Debug("Scene Values Setup!");
-        }
-
-        void Update()
-        {
-            if (GameHelper.IsGameScene(TryGetScene()))
-            {
-                // Verify the EyeTracking is active
-                if (currentEyeTrackingRuntime.EyeTrackingEnabled)
-                {
-                    // Check if the user is blinking
-                    if (BlinkComponent != null)
-                    {
-                        // set the UI text soon
-                        //GameHelper.SetUILabelText(SRanipalHelper.EyeData.verbose_data.combined.eye_data.eye_openness.ToString());
-                        // Left and Right are separate, because combined wasn't working for me
-                        if (UniversalEyeData.CombinedEye.Widen <= 0.4f)
-                        {
-                            Blinking.UpdateWaitTime(BlinkComponent, Mathf.Infinity);
-                            if (!Blinking.IsBlinking) { Blinking.CloseEyes(BlinkComponent); }
-                        }
-                        else
-                        {
-                            BlinkComponent.waitBetween = 0;
-                            if (Blinking.IsBlinking) { Blinking.OpenEyes(BlinkComponent); }
-                        }
-                    }
-                }
-            }
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -114,8 +117,11 @@ namespace LabratEyeTracking
                 currentScene = scene;
                 if (GameHelper.IsGameScene(scene))
                 {
-                    SubscribeEyeData = false;
-                    SetupEyeValues();
+                    Task.Run(() =>
+                    {
+                        Thread.Sleep(2000);
+                        SetupEyeValues();
+                    });
                 }
                 else
                 {

@@ -46,6 +46,8 @@ namespace LabratEyeTracking
         public float x;
         public float y;
         public float Widen;
+
+        public override string ToString() => $"xy({x},{y}) widen({Widen})";
     }
 
     public interface IEyeTracking

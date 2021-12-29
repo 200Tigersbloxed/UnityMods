@@ -14,12 +14,11 @@ namespace LabratEyeTracking
 
         private Thread PimaxWorker;
 
-        public void Initialize() => Init();
-
         public void Init() 
         {
             PimaxWorker = new Thread(delegate ()
             {
+                LogHelper.Debug("Initializing Pimax Eye Tracking...");
                 eyeTracker = new Pimax.EyeTracking.EyeTracker();
                 eyeTracker.OnStart += OnEyeTrackerStart;
                 eyeTracker.OnStop += OnEyeTrackerStop;
@@ -63,6 +62,8 @@ namespace LabratEyeTracking
             };
             UniversalEyeData.UpdateLeftEyeData(LeftEye);
             UniversalEyeData.UpdateRightEyeData(RightEye);
+            MainMod.OnEyeDataUpdate.Invoke(UniversalEyeData.LeftEye, UniversalEyeData.RightEye,
+                UniversalEyeData.CombinedEye);
         }
 
         public void Kill() 

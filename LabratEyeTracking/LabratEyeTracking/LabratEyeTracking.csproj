@@ -10,6 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.5.5.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\SteamLibrary\steamapps\common\SCP Labrat\BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>

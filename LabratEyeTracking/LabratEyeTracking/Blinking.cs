@@ -10,7 +10,6 @@ namespace LabratEyeTracking
 
         public static void CloseEyes(Activateblink BlinkComponent)
         {
-            BlinkComponent.blinkingEnabled = true;
             BlinkComponent.Forcedblink();
             IsBlinking = true;
         }
