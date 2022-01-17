@@ -4,13 +4,13 @@ Bring Eye tracking to SCP: Labrat
 
 ## Mod Loader
 
-[BepInEx v5.4.11](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.11)
+[MelonLoader v0.5.2](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.2)
 
 ## Installing
 
-1) Move DLL to `[SCP Labrat Game Folder]/BepInEx/plugins`
+1) Move DLL to `[SCP Labrat Game Folder]/Mods`
 2) Run the Game at least once
-3) Navigate to `BepInEx/config/lol.fortnite.www.labrateyetracking.cfg` and open the file with a text editor (I use VSCode)
+3) Navigate to `UserData/MelonPreferences.cfg` and open the file with a text editor
 4) Set the Configuration value to either 1 or 2 (see the table below)
 
 ## Eye Trackers
@@ -30,7 +30,7 @@ Enables use of the SRanipal SDK to detect if a user has their eyes open or not.
 
 **NOTE:** This *only* works with the SRanipal SDK and aSeeVRClient (Pimax). Any HMDs that have eye tracking, but *don't* use the SRanipal SDK or aSeeVRClient are NOT supported.
 
-Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/LET-v1.2.0
+Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/LET-v1.3.0
   
 ## Credits
 
