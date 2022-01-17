@@ -85,13 +85,17 @@ namespace LabratEyeTracking
                 {
                     x = EyeData.verbose_data.left.pupil_position_in_sensor_area.x,
                     y = EyeData.verbose_data.left.pupil_position_in_sensor_area.y,
-                    Widen = EyeData.verbose_data.left.eye_openness
+                    Widen = EyeData.verbose_data.left.eye_openness,
+                    origin = EyeData.verbose_data.left.gaze_origin_mm.normalized,
+                    direction = EyeData.verbose_data.left.gaze_direction_normalized
                 };
                 Eye RightEye = new Eye()
                 {
                     x = EyeData.verbose_data.right.pupil_position_in_sensor_area.x,
                     y = EyeData.verbose_data.right.pupil_position_in_sensor_area.y,
-                    Widen = EyeData.verbose_data.right.eye_openness
+                    Widen = EyeData.verbose_data.right.eye_openness,
+                    origin = EyeData.verbose_data.right.gaze_origin_mm.normalized,
+                    direction = EyeData.verbose_data.right.gaze_direction_normalized
                 };
                 UniversalEyeData.UpdateLeftEyeData(LeftEye);
                 UniversalEyeData.UpdateRightEyeData(RightEye);

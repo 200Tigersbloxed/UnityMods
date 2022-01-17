@@ -52,13 +52,18 @@ namespace LabratEyeTracking
             {
                 x = eyeTracker.LeftEye.Gaze.x,
                 y = eyeTracker.LeftEye.Gaze.y,
-                Widen = eyeTracker.LeftEye.Openness
+                Widen = eyeTracker.LeftEye.Openness,
+                origin = eyeTracker.LeftEye.GazeOrigin.normalized,
+                direction = eyeTracker.LeftEye.GazeDirection.normalized
+                
             };
             Eye RightEye = new Eye()
             {
                 x = eyeTracker.RightEye.Gaze.x,
                 y = eyeTracker.RightEye.Gaze.y,
-                Widen = eyeTracker.RightEye.Openness
+                Widen = eyeTracker.RightEye.Openness,
+                origin = eyeTracker.RightEye.GazeOrigin.normalized,
+                direction = eyeTracker.RightEye.GazeDirection.normalized
             };
             UniversalEyeData.UpdateLeftEyeData(LeftEye);
             UniversalEyeData.UpdateRightEyeData(RightEye);

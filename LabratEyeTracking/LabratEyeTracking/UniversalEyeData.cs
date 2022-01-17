@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace LabratEyeTracking
 {
@@ -14,11 +15,13 @@ namespace LabratEyeTracking
         {
             get
             {
-                Eye generatedCombinedEye = new Eye()
+                Eye generatedCombinedEye = new Eye
                 {
                     x = (LeftEye.x + RightEye.x) / 2,
                     y = (LeftEye.y + RightEye.y) / 2,
-                    Widen = (LeftEye.Widen + RightEye.Widen) / 2
+                    Widen = (LeftEye.Widen + RightEye.Widen) / 2,
+                    origin = Vector3.Cross(LeftEye.origin, RightEye.origin),
+                    direction = Vector3.Cross(LeftEye.direction, RightEye.direction)
                 };
                 return generatedCombinedEye;
             }
@@ -47,16 +50,15 @@ namespace LabratEyeTracking
         public float y;
         public float Widen;
 
+        public Vector3 origin;
+        public Vector3 direction;
+
         public override string ToString() => $"xy({x},{y}) widen({Widen})";
     }
 
     public interface IEyeTracking
     {
-        bool EyeTrackingEnabled
-        {
-            get;
-            set;
-        }
+        bool EyeTrackingEnabled { get; }
 
         void Init();
         void Kill();

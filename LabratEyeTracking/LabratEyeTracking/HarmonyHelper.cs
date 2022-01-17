@@ -25,7 +25,7 @@ namespace LabratEyeTracking
 
         public static void Patch()
         {
-            Harmony.CreateAndPatchAll(typeof(discordPatch));
+            HarmonyLib.Harmony.CreateAndPatchAll(typeof(discordPatch));
             LogHelper.Debug("Patched Harmony!");
         }
     }
