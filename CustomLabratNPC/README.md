@@ -9,8 +9,9 @@ Create custom SCPs for SCP Labrat
 ## Installing
 
 1) Install MelonLoader to SCP Labrat
-2) Move DLL to `[SCP Labrat Game Folder]/Mods`
-3) Run the Game at least once to generate required files/directories
+2) Move `CustomLabratNPC.dll` to `[SCP Labrat Game Folder]/Mods`
+3) Move `CustomLabratNPC_Editor.dll` to `[SCP Labrat Game Folder/UserLibs]`
+4) Run the Game at least once to generate required files/directories
 
 Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/clnpc-v0.1.0
 
