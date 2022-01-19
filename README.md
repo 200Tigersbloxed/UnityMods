@@ -19,7 +19,7 @@ Find mods for games that you play!
 ### SCP: Labrat Mods
 
 + [LabratEyeTracking](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking)
-+ [CustomLabratNPC](https://github.com/200Tigersbloxed/UnityMods/releases/tag/clnpc-v0.1.0)
++ [CustomLabratNPC](https://github.com/200Tigersbloxed/UnityMods/tree/main/CustomLabratNPC)
 
 ### VRChat Mods
 
