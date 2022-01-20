@@ -137,8 +137,7 @@ namespace CustomLabratNPC
                 foreach (string assetBundle in Directory.GetFiles(OutputAssetBundleDirectory))
                 {
                     string assetBundleName = Path.GetFileName(assetBundle);
-                    if (assetBundleName.Contains(bundleName) && assetBundleName.Contains(".lnpc") &&
-                        !assetBundleName.Contains(".manifest") && !assetBundleName.Contains(".meta"))
+                    if (assetBundleName == $"{bundleName.ToLower()}.lnpc")
                     {
                         Debug.Log("Found Output AssetBundle! Copying to Output...");
                         string outcopy = Path.Combine(output, assetBundleName);
@@ -152,25 +151,31 @@ namespace CustomLabratNPC
                         }
                         else
                         {
-                            string[] newoutcopy = assetBundleName.Split('.');
-                            newoutcopy[0] = newoutcopy[0] + Directory.GetFiles(EditorInfo.Output).Length;
-                            File.Copy(assetBundle, EditorInfo.Output + "\\" + newoutcopy[0] + 
-                                                   '.' + newoutcopy[1]);
-                            OutputFileCopy = EditorInfo.Output + "/" + newoutcopy[0] + '.' + newoutcopy[1];
+                            EditorUtility.DisplayDialog("CustomLabratNPC Builder",
+                                "Failed to build NPC! NPC already Exists. Enable AllowOverwrite", "OK");
                         }
                     }
                 }
-                string OutputFileCopyDirectory = Path.GetDirectoryName(OutputFileCopy) ?? String.Empty;
                 if (!string.IsNullOrEmpty(OutputFileCopy))
                 {
-                    Debug.Log("Completed Operation!");
-                    if (EditorUtility.DisplayDialog("CustomLabratNPC Builder",
-                        $"Successfully built NPC {EditorInfo.descriptor.gameObject.name} \n {OutputFileCopy}", "Go to File",
-                        "OK"))
-                        Process.Start(OutputFileCopyDirectory);
-                    return true;
+                    try
+                    {
+                        string OutputFileCopyDirectory = Path.GetDirectoryName(OutputFileCopy) ?? String.Empty;
+                        Debug.Log("Completed Operation!");
+                        if (EditorUtility.DisplayDialog("CustomLabratNPC Builder",
+                                $"Successfully built NPC {EditorInfo.descriptor.gameObject.name} \n {OutputFileCopy}", "Go to File",
+                                "OK"))
+                            Process.Start(OutputFileCopyDirectory);
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("Failed to Copy Assetbundle!");
+                        EditorUtility.DisplayDialog("CustomLabratNPC Builder",
+                            "Failed to copy NPC! \n" +
+                            "OutputFileCopy: " + OutputFileCopy, "OK");
+                    }
                 }
-                Debug.LogError("Failed to Copy Assetbundle!");
             }
             else
                 Debug.LogError("Prefab failed to save or prefab does not exist!");
@@ -228,7 +233,7 @@ namespace CustomLabratNPC
                 List<string> invalidSDKs = new List<string>();
                 foreach (string virtualRealitySDK in PlayerSettings.GetAvailableVirtualRealitySDKs(BuildTargetGroup.Standalone))
                 {
-                    if (!virtualRealitySDK.Contains("OpenVR"))
+                    if (!virtualRealitySDK.Contains("None"))
                     {
                         invalidSDKs.Add(virtualRealitySDK);
                     }
@@ -239,7 +244,7 @@ namespace CustomLabratNPC
                     string bruh = String.Empty;
                     foreach (string invalidSDK in invalidSDKs)
                     {
-                        if(!invalidSDK.Contains("None") && !invalidSDK.Contains("stereo"))
+                        if(!invalidSDK.Contains("None"))
                             bruh = bruh + invalidSDK + " ";
                     }
 
@@ -250,7 +255,7 @@ namespace CustomLabratNPC
                 GUILayout.Label($"Invalid SDKs: {invalidsdk()}", EditorStyles.miniLabel);
                 if (GUILayout.Button("Reset Virtual Reality SDKs"))
                 {
-                    PlayerSettings.SetVirtualRealitySDKs(BuildTargetGroup.Standalone, new string[] {"OpenVR"});
+                    PlayerSettings.SetVirtualRealitySDKs(BuildTargetGroup.Standalone, new string[] {"None"});
                 }
                 NewGUILine();
             }

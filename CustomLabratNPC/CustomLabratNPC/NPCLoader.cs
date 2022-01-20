@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CustomLabratNPC.ModSupport;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,11 +41,11 @@ namespace CustomLabratNPC
             // Load Libraries, then AssetBundles
             if (ConfigHelper.LoadedConfig.loadUnsafeCode.Value)
             {
-                LogHelper.Error("Loading unsafe code. **WARNING**: " +
+                LogHelper.Error("\n Loading unsafe code. \n**WARNING**: \n" +
                                 "THIS WILL RUN ANY CODE THAT MAY CAUSE DAMAGE TO YOUR " +
                                 "MACHINE! NEVER EXCEPT ANY UAC PROMPTS FROM LABRAT, AND " +
                                 "ALWAYS MAKE SURE THAT LIBRARIES ARE SAFE BEFORE RUNNING! " +
-                                "YOU. HAVE. BEEN. WARNED.", ShouldStackFrame:false);
+                                "YOU. HAVE. BEEN. WARNED.\n", ShouldStackFrame:false);
                 foreach (string library in Directory.GetFiles(LibsDir))
                 {
                     Assembly assembly = Assembly.LoadFile(library);
@@ -81,12 +83,39 @@ namespace CustomLabratNPC
                 else
                     LogHelper.Error("Failed to load NPC at " + file);
             }
+            // Load SelectedNPCs from Config
+            string npc173_identifier = ConfigHelper.LoadedConfig.selectedNPC173.Value;
+            if (!string.IsNullOrEmpty(npc173_identifier) && npc173_identifier != "random")
+            {
+                try
+                {
+                    (string, NPCEnum, string) npc173_parsed =
+                        LabratUIKitHelper.ParseNPCConfigIdentifier(npc173_identifier);
+                    CustomNPCDescriptor npc173 = FindLoadedNPCByName(npc173_parsed.Item3);
+                    SelectedNPC[npc173_parsed.Item2] = npc173;
+                }
+                catch (Exception e)
+                {
+                    LogHelper.Error("Failed to get NPC173 from config!", e);
+                }
+            }
             LogHelper.Debug("Loaded NPCs!");
+            LabratUIKitHelper.SetupLabratUI(LoadedNPCs);
         }
 
+        [CanBeNull]
+        public static CustomNPCDescriptor FindLoadedNPCByName(string name) =>
+            LoadedNPCs.Find(x => x.gameObject.name == name);
+
+        public static readonly Dictionary<NPCEnum, CustomNPCDescriptor> SelectedNPC =
+            new Dictionary<NPCEnum, CustomNPCDescriptor>
+            {
+                {NPCEnum.Unknown, null},
+                {NPCEnum.SCP173, null}
+            };
+
         /// <summary>
-        /// Gets the first NPC Loaded in the list. THis will be replaced with a method of selecting
-        /// which SCP you want to be used as an NPC.
+        /// Gets the selected NPC, if there's none selected, default to the first
         /// </summary>
         /// <param name="npcenum">
         /// The Enum of the NPC to load.
@@ -95,8 +124,18 @@ namespace CustomLabratNPC
         /// Returns the first CustomNPCDescriptor found; null if none are loaded.
         /// </returns>
         [CanBeNull]
-        public static CustomNPCDescriptor GetFirstNPCbyNPCType(NPCEnum npcenum) =>
-            LoadedNPCs.FirstOrDefault(x => x.NPCType == npcenum);
+        public static CustomNPCDescriptor GetFirstNPCbyNPCType(NPCEnum npcenum)
+        {
+            if (SelectedNPC[npcenum] == null)
+            {
+                LogHelper.Log("No NPC was selected, defaulting to first!");
+                CustomNPCDescriptor[] npcs = LoadedNPCs.Where(x => x.NPCType == npcenum).ToArray();
+                if (npcs.Length > 0)
+                    return npcs[new System.Random().Next(npcs.Length)];
+                return null;
+            }
+            return SelectedNPC[npcenum];
+        }
 
         /// <summary>
         /// Will take a CustomNPCDescriptor from a loaded AssetBundle, and Instantiate it's GameObject.

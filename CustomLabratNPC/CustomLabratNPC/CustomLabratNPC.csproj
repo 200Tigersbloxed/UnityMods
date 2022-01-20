@@ -36,6 +36,9 @@
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>E:\SteamLibrary\steamapps\common\SCP Labrat\SCP Labrat_Data\Managed\Assembly-CSharp.dll</HintPath>
         </Reference>
+        <Reference Include="LabratUIKit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\..\SteamLibrary\steamapps\common\SCP Labrat\Mods\LabratUIKit.dll</HintPath>
+        </Reference>
         <Reference Include="MelonLoader, Version=0.5.2.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>E:\SteamLibrary\steamapps\common\SCP Labrat\MelonLoader\MelonLoader.dll</HintPath>
         </Reference>
@@ -60,6 +63,7 @@
         <Reference Include="System.Configuration" />
         <Reference Include="System.Core" />
         <Reference Include="System.Data" />
+        <Reference Include="System.Drawing" />
         <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
           <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
           <Private>True</Private>
@@ -89,6 +93,7 @@
         <Compile Include="INPCController.cs" />
         <Compile Include="LabratTools.cs" />
         <Compile Include="LogHelper.cs" />
+        <Compile Include="ModSupport\LabratUIKitHelper.cs" />
         <Compile Include="NPCLoader.cs" />
         <Compile Include="NPC\NPC173Controller.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
@@ -101,6 +106,9 @@
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="unknown.png" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

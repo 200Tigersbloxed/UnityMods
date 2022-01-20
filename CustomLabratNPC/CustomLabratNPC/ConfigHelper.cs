@@ -19,6 +19,9 @@ namespace CustomLabratNPC
         private static T GetEntryInConfig<T>(string key) =>
             MelonPreferences.GetEntry<T>(category.Identifier, key).Value;
 
+        private static void SetEntryInConfig<T>(string key, T value) =>
+            MelonPreferences.SetEntryValue(category.Identifier, key, value);
+
         private static void CreateConfig()
         {
             category = MelonPreferences.CreateCategory(myCategory);
@@ -53,8 +56,13 @@ namespace CustomLabratNPC
                                                             "THIS WILL RUN ANY CODE THAT MAY CAUSE DAMAGE TO YOUR " +
                                                             "MACHINE! NEVER EXCEPT ANY UAC PROMPTS FROM LABRAT, AND " +
                                                             "ALWAYS MAKE SURE THAT LIBRARIES ARE SAFE BEFORE RUNNING! " +
-                                                            "YOU. HAVE. BEEN. WARNED.", 
-                    false), () => GetEntryInConfig<bool>("loadUnsafeCode"));
+                                                            "YOU. HAVE. BEEN. WARNED.",
+                    false), () => GetEntryInConfig<bool>("loadUnsafeCode"),
+                (value) => SetEntryInConfig("loadUnsafeCode", value));
+
+            public ConfigValue<string> selectedNPC173 = new ConfigValue<string>("selectedNPC173",
+                () => CreateEntryInConfig("selectedNPC173", "DO NOT EDIT! The NPC173 to use.", "random"),
+                () => GetEntryInConfig<string>("selectedNPC173"), (value) => SetEntryInConfig("selectedNPC173", value));
         }
         
         public class ConfigValue<T>
@@ -62,8 +70,9 @@ namespace CustomLabratNPC
             public string Key { get; }
             public T Value { get; set; }
             private Func<T> GetEntry;
+            private Action<T> SetEntry;
 
-            public ConfigValue(string Key, Action CreateEntry, Func<T> GetEntry)
+            public ConfigValue(string Key, Action CreateEntry, Func<T> GetEntry, Action<T> SetEntry)
             {
                 this.Key = Key;
                 if (!DoesEntryExist(Key))
@@ -73,6 +82,14 @@ namespace CustomLabratNPC
                 }
                 this.GetEntry = GetEntry;
                 GetEntry.Invoke();
+                this.SetEntry = SetEntry;
+            }
+
+            public void SetValue(T value)
+            {
+                SetEntry.Invoke(value);
+                Value = value;
+                LogHelper.Debug($"Invoked SetValue for Value {Key} and value {value}");
             }
 
             public T ReloadValues()
