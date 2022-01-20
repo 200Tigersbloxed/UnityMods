@@ -17,7 +17,7 @@ Create custom SCPs for SCP Labrat
 3) Move `CustomLabratNPC_Editor.dll` to `[SCP Labrat Game Folder/UserLibs]`
 4) Run the Game at least once to generate required files/directories
 
-Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/clnpc-v0.1.0
+Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/clnpc-v0.2.0
 
 ## Documentation
 
