@@ -20,6 +20,7 @@ Find mods for games that you play!
 
 + [LabratEyeTracking](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratEyeTracking)
 + [CustomLabratNPC](https://github.com/200Tigersbloxed/UnityMods/tree/main/CustomLabratNPC)
++ [LabratUIKit](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratUIKit)
 
 ### VRChat Mods
 
