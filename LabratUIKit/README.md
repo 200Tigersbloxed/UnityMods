@@ -1,4 +1,4 @@
-**LabratUIKit**
+# LabratUIKit
 
 Easily add in-game UI functionality to SCP Labrat
 
