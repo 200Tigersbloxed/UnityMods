@@ -6,6 +6,10 @@ Create custom SCPs for SCP Labrat
 
 [MelonLoader v0.5.2](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.2)
 
+## Required Mods/Libraries
+
++ [LabratUIKit](https://github.com/200Tigersbloxed/UnityMods/tree/main/LabratUIKit)
+
 ## Installing
 
 1) Install MelonLoader to SCP Labrat
