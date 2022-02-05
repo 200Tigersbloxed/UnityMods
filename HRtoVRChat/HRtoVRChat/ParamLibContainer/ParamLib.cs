@@ -14,7 +14,7 @@ namespace ParamLib
 
         private static AvatarAnimParamController LocalAnimParamController => VRCPlayer.field_Internal_Static_VRCPlayer_0
             ?.field_Private_AnimatorControllerManager_0?.field_Private_AvatarAnimParamController_0;
-
+        
         private static readonly MethodInfo PrioritizeMethod = typeof(AvatarPlayableController).GetMethods().Where(info =>
                 info.Name.Contains("Method") && !info.Name.Contains("PDM") && info.Name.Contains("Public")
                 && info.GetParameters().Length == 1 && info.Name.Contains("Int32") &&
@@ -45,19 +45,19 @@ namespace ParamLib
         {
             // If they're null, then try getting LocalParams
             parameters = parameters ?? GetLocalParams();
-
+            
             // Separate Length from nulll check, otherwise you'll get a null exception if parameters are null
             return parameters != null && parameters.Any(p => p.name == paramName && p.valueType == paramType);
         }
-
+        
         public static (int?, VRCExpressionParameters.Parameter) FindParam(string paramName, VRCExpressionParameters.ValueType paramType,
             VRCExpressionParameters.Parameter[] parameters = null)
         {
             // If they're null, then try getting LocalParams
             parameters = parameters ?? GetLocalParams();
-
+            
             if (parameters == null) return (null, null);
-
+            
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -68,14 +68,14 @@ namespace ParamLib
 
             return (null, null);
         }
-
+        
         public static double? GetParamDefaultValue(VRCExpressionParameters.Parameter param) => param?.defaultValue;
 
         public static bool SetParameter(int paramIndex, float value)
         {
             if (LocalAnimParamController?.field_Private_AvatarPlayableController_0 == null) return false;
 
-            SetMethod.Invoke(LocalAnimParamController.field_Private_AvatarPlayableController_0, new object[] { paramIndex, value });
+            SetMethod.Invoke(LocalAnimParamController.field_Private_AvatarPlayableController_0, new object[] {paramIndex, value});
             return true;
         }
     }

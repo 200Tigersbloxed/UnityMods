@@ -1,24 +1,21 @@
-﻿// Replaced with Reflection
-//using HypeRate.NET;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Net.WebSockets;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnhollowerBaseLib;
+using Timer = System.Timers.Timer;
 
 namespace HRtoVRChat.HRManagers
 {
     public class HypeRateManager : HRManager
     {
-        private ClientWebSocket cws = null;
+        private WebsocketTemplate wst;
         private Thread _thread;
-        private bool shouldOpen = false;
+        private bool shouldOpen;
 
-        private bool IsConnected => cws?.State == WebSocketState.Open;
-        public int HR { get; private set; } = 0;
+        private bool IsConnected => wst?.IsAlive ?? false;
+        public int HR { get; private set; }
+        public string Timestamp { get; private set; }
 
         public bool Init(string id)
         {
@@ -28,105 +25,36 @@ namespace HRtoVRChat.HRManagers
             return IsConnected;
         }
 
-        private bool didSendJsonMessage = false;
-
-        int senderror = 0;
-
-        private async Task SendMessage(string message)
-        {
-            if (cws != null)
-            {
-                if (cws.State == WebSocketState.Open)
-                {
-                    byte[] sendBody = Encoding.UTF8.GetBytes(message);
-                    try
-                    {
-                        await cws.SendAsync(new ArraySegment<byte>(sendBody), WebSocketMessageType.Text, true, CancellationToken.None);
-                    }
-                    catch (Exception e) 
-                    {
-                        LogHelper.Error("HypeRateManager", "Failed to SendMessage to HypeRate server! Exception:" + e);
-                        senderror++;
-                        if (senderror > 15)
-                        {
-                            await Close();
-                            LogHelper.Warn("HypeRateManager", "Too many errors while trying to send a message. Closed Socket.");
-                        }
-                    }
-                }
-            }
-        }
-
-        int receiveerror = 0;
-        private async Task<string> ReceiveMessage()
-        {
-            var clientbuffer = new ArraySegment<byte>(new byte[1024]);
-            WebSocketReceiveResult result = null;
-            try
-            {
-                result = await cws.ReceiveAsync(clientbuffer, CancellationToken.None);
-            }
-            catch(Exception e)
-            {
-                LogHelper.Error("HypeRateManager", "Failed to Receive Message from HypeRate server! Exception: " + e);
-                receiveerror++;
-                if (receiveerror > 15)
-                {
-                    await Close();
-                    LogHelper.Warn("HypeRateManager", "Too many errors while trying to receive a message. Closed Socket.");
-                }
-            }
-            // Only check if result is not null
-            if(result != null)
-                if (result.Count != 0 || result.CloseStatus == WebSocketCloseStatus.Empty)
-                {
-                    string msg = Encoding.ASCII.GetString(clientbuffer.Array);
-                    return msg;
-                }
-            return String.Empty;
-        }
-
-        private void HandleMessage(string message)
+        private async void HandleMessage(string message)
         {
             try
             {
-                JObject json = JObject.Parse(message);
-                if (json["event"] != null && json["event"].ToObject<string>() == "hr_update")
+                // Parse the message and get the HR or Pong
+                JObject jo = JObject.Parse(message);
+                if (jo["method"] != null)
                 {
-                    if (json["payload"] != null && json["payload"]["hr"] != null)
-                    {
-                        HR = json["payload"]["hr"].ToObject<int>();
-                    }
-                    else
-                    {
-                        throw new Exception("json payload/hr is null!");
-                    }
+                    string pingId = jo["pingId"]?.Value<string>();
+                    await wst.SendMessage("{\"method\": \"pong\", \"pingId\": \"" + pingId + "\"}");
                 }
                 else
                 {
-                    throw new Exception("json event is null!");
+                    HR = Convert.ToInt32(jo["hr"].Value<string>());
+                    Timestamp = jo["timestamp"].Value<string>();
                 }
             }
             catch (Exception) { }
         }
-
-        private string GenerateSessionJson(string sessionId)
-        {
-            // Assumes HeartRate has been created
-            return "{\"topic\": \"hr:" + sessionId + "\",\"event\": \"phx_join\",\"payload\": {},\"ref\": 0}";
-        }
-
 
         public void StartThread(string id)
         {
             _thread = new Thread(async () =>
             {
                 IL2CPP.il2cpp_thread_attach(IL2CPP.il2cpp_domain_get());
-                cws = new ClientWebSocket();
+                wst = new WebsocketTemplate("wss://hrproxy.fortnite.lol:2096/hrproxy");
                 bool noerror = true;
                 try
                 {
-                    await cws.ConnectAsync(new Uri("wss://app.hyperate.io/socket/websocket"), CancellationToken.None);
+                    await wst.Start();
                 }
                 catch(Exception e)
                 {
@@ -135,30 +63,21 @@ namespace HRtoVRChat.HRManagers
                 }
                 if (noerror)
                 {
-                    int i = 0;
-                    while (shouldOpen && IsConnected)
+                    await wst.SendMessage("{\"reader\": \"hyperate\", \"identifier\": \"" + id + "\"}");
+                    while (shouldOpen)
                     {
-                        if(IsConnected && !didSendJsonMessage)
+                        if (IsConnected)
                         {
-                            await SendMessage(GenerateSessionJson(id));
-                            didSendJsonMessage = true;
+                            string message = await wst.ReceiveMessage();
+                            if (!string.IsNullOrEmpty(message))
+                                HandleMessage(message);
                         }
-                        if (i >= 1500)
-                        {
-                            await SendMessage("{\"topic\": \"phoenix\",\"event\": \"heartbeat\",\"payload\": {},\"ref\": 123456}");
-                            i = 0;
-                        }
-                        else
-                            i++;
-                        string message = await ReceiveMessage();
-                        if (!string.IsNullOrEmpty(message))
-                            HandleMessage(message);
-                        Thread.Sleep(10);
+                        Thread.Sleep(1);
                     }
                 }
                 await Close();
                 LogHelper.Log("HypeRateManager", "Closed HypeRate");
-                _thread.Abort();
+                _thread?.Abort();
             });
             _thread.Start();
         }
@@ -167,14 +86,12 @@ namespace HRtoVRChat.HRManagers
 
         private async Task Close()
         {
-            if (cws != null)
-                if (cws.State == WebSocketState.Open)
+            if (wst != null)
+                if (wst.IsAlive)
                     try
                     {
-                        await cws.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, CancellationToken.None);
-                        didSendJsonMessage = false;
-                        cws.Dispose();
-                        cws = null;
+                        await wst.Stop();
+                        wst = null;
                     }
                     catch(Exception e)
                     {
@@ -188,7 +105,7 @@ namespace HRtoVRChat.HRManagers
 
         public void Stop()
         {
-            if (cws != null)
+            if (wst != null)
             {
                 shouldOpen = false;
                 LogHelper.Debug("HypeRateManager", "Sent message to Stop WebSocket");
@@ -199,7 +116,7 @@ namespace HRtoVRChat.HRManagers
 
         public bool IsOpen() => IsConnected;
 
-        public bool IsActive() => IsOpen();
+        public bool IsActive() => IsConnected;
     }
 
     /*

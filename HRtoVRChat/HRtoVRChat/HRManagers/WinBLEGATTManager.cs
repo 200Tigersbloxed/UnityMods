@@ -1,13 +1,19 @@
-﻿using GenericHRLib;
+﻿/*
+ * This file is now archived
+ * https://github.com/200Tigersbloxed/UnityMods/issues/6
+ */
+
+/*
+using GenericHRLib;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UnhollowerBaseLib;
 
 namespace HRtoVRChat.HRManagers
 {
-    /*
     public class WinBLEGATTManager : HRManager
     {
         private Assembly generichr_assembly = null;
@@ -19,16 +25,45 @@ namespace HRtoVRChat.HRManagers
         public static int HR { get; private set; } = 0;
         public static bool isConnected { get; private set; } = false;
 
-        public static void HandleHRUpdated(object structInstance)
+        // https://stackoverflow.com/a/194223/12968919
+        private static string ProgramFilesx86()
         {
-            int eventHR = (int)structInstance.GetType().GetProperty("BeatsPerMinute").GetValue(global_generichr_instance);
-            HR = eventHR;
+            if( 8 == IntPtr.Size 
+                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            {
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            }
+
+            return Environment.GetEnvironmentVariable("ProgramFiles");
         }
-
-        public static void HandleHRDisconnected() => isConnected = false;
-
+        
         private void load_generichr_resource()
         {
+            // load UniversalApiContract
+            string references = Path.Combine(new string[] {ProgramFilesx86(), "Windows Kits", "10", "References"});
+            bool didLoad = false;
+            foreach (string directory in Directory.GetDirectories(references))
+            {
+                LogHelper.Debug("g", directory);
+                string file = Path.Combine(new string[]
+                {
+                    directory, "Windows.Foundation.UniversalApiContract", "10.0.0.0",
+                    "Windows.Foundation.UniversalApiContract.winmd"
+                });
+                LogHelper.Debug("g", file);
+                if (!string.IsNullOrEmpty(file) && File.Exists(file))
+                {
+                    LogHelper.Debug("WinBLEGATTManager", $"Found UniversalApiContract at {file}");
+                    Assembly.LoadFile(file);
+                    didLoad = true;
+                }
+            }
+            if (!didLoad)
+            {
+                LogHelper.Error("WinBLEGATTManager", "Failed to find UniversalApiContract");
+                return;
+            }
+            // load GenericHRLib
             var assembly = Assembly.GetExecutingAssembly();
             using (var stream = assembly.GetManifestResourceStream("HRtoVRChat.Libs.GenericHRLib.dll"))
             {
@@ -37,7 +72,7 @@ namespace HRtoVRChat.HRManagers
                     using (MemoryStream ms = new MemoryStream())
                     {
                         stream.CopyTo(ms);
-                        Assembly.Load(ms.ToArray());
+                        generichr_assembly = Assembly.Load(ms.ToArray());
                         LogHelper.Debug("WinBLEGATTManager", "Loaded GenericHRLib Assembly!");
                     }
                 }
@@ -56,46 +91,100 @@ namespace HRtoVRChat.HRManagers
                 LogHelper.Debug("WinBLEGATTManager", "GenericHRDevice created!");
                 return newInstance;
             }
-            else
-            {
-                LogHelper.Error("WinBLEGATTManager", "generichr_assembly is null!");
-                global_generichr_instance = null;
-                return null;
-            }
+            LogHelper.Error("WinBLEGATTManager", "generichr_assembly is null!");
+            global_generichr_instance = null;
+            return null;
         }
 
-        private void generichrdevice_register_events(object reference)
+        private bool generichrdevice_findandconnect(object instance)
         {
-            // HeartRateUpdated
-            EventInfo hrupdated = generichr_type.GetEvent("HeartRateUpdated");
-            Delegate hruHandler = Delegate.CreateDelegate(hrupdated.EventHandlerType, null, this.GetType().GetMethod("HandleHRUpdated"));
-            hrupdated.GetAddMethod().Invoke(reference, new[] { hruHandler });
-            // HeartRateDisconnected
-            EventInfo hrdisconnected = generichr_type.GetEvent("HeartRateDisconnected");
-            Delegate hrdHandler = Delegate.CreateDelegate(hrdisconnected.EventHandlerType, null, this.GetType().GetMethod("HandleHRDisconnected"));
-            hrdisconnected.GetAddMethod().Invoke(reference, new[] { hrdHandler });
-            LogHelper.Debug("WinBLEGATTManager", "Registered GenericHRDevice Events!");
-        }
-
-        private bool generichrdevice_findandconnect(object reference)
-        {
-            bool didConnect = false;
             MethodInfo method = generichr_type.GetMethod("FindAndConnect");
-            object invokedMethod = null;
-            try { invokedMethod = method.Invoke(reference, null); didConnect = true; }catch(Exception e) 
+            if (method != null)
             {
-                LogHelper.Error("WinBLEGATTManager", "Failed to FindAndConnect() devices! Exception: " + e);
-                didConnect = false;
+                try
+                {
+                    method.Invoke(instance, null);
+                    return generichrdevice_getboolproperty(generichrdevice_boolproperties.IsAlive, instance);
+                }
+                catch (Exception e)
+                {
+                    LogHelper.Error("WinBLEGATTManager", $"Failed to FindAndConnect! Exception: {e}");
+                    return false;
+                }
             }
-            return didConnect;
+            LogHelper.Error("WinBLEGATTManager", "Failed to find FindAndConnect!");
+            return false;
         }
 
-        private void generichrdevice_dispose(object reference)
+        private enum generichrdevice_boolproperties
+        {
+            NeedsUpdate,
+            IsAlive
+        }
+        
+        private bool generichrdevice_getboolproperty(generichrdevice_boolproperties boolproperties, object instance)
+        {
+            switch (boolproperties)
+            {
+                case generichrdevice_boolproperties.IsAlive:
+                    PropertyInfo isalive_property = generichr_type.GetProperty("IsAlive");
+                    if (isalive_property != null)
+                    {
+                        bool isalive_value =
+                            (bool) Convert.ChangeType(isalive_property.GetValue(instance), typeof(bool));
+                        return isalive_value;
+                    }
+                    LogHelper.Error("WinBLEGATTManager", "Failed to get IsAlive Property!");
+                    break;
+                case generichrdevice_boolproperties.NeedsUpdate:
+                    PropertyInfo needsupdate_property = generichr_type.GetProperty("NeedsUpdate");
+                    if (needsupdate_property != null)
+                    {
+                        bool needsupdate_value =
+                            (bool) Convert.ChangeType(needsupdate_property.GetValue(instance), typeof(bool));
+                        return needsupdate_value;
+                    }
+                    LogHelper.Error("WinBLEGATTManager", "Failed to get NeedsUpdate Property!");
+                    break;
+            }
+            LogHelper.Warn("WinBLEGATTManager", "Unknown issue in generichrdevice_getboolproperty");
+            return false;
+        }
+
+        private object generichrdevice_getheartratereading(object instance)
+        {
+            MethodInfo method = generichr_type.GetMethod("GetHeartRateReading");
+            if (method != null)
+            {
+                object result;
+                result = method.Invoke(instance, null);
+                return result;
+            }
+            LogHelper.Error("WinBLEGATTManager", "Failed to GetHeartRateReading!");
+            return null;
+        }
+
+        private int generichrdevice_getheartrate(object instance)
+        {
+            PropertyInfo property = generichr_type.GetProperty("HeartRate");
+            if (property != null)
+            {
+                object result = property.GetValue(instance);
+                return (int) Convert.ChangeType(result, typeof(int));
+            }
+            LogHelper.Error("WinBLEGATTManager", "Failed to find HeartRate!");
+            return -1;
+        }
+
+        private void generichrdevice_dispose(object instance)
         {
             MethodInfo disposeMethod = generichr_type.GetMethod("Dispose");
-            object invokedMethod = disposeMethod.Invoke(reference, null);
+            if(disposeMethod != null)
+                disposeMethod.Invoke(instance, null);
+            else
+                LogHelper.Error("WinBLEGATTManager", "Failed to Dispose!");
         }
-
+        
         private void VerifyClosedDevice()
         {
             if (global_generichr_instance != null)
@@ -128,14 +217,15 @@ namespace HRtoVRChat.HRManagers
                 if (generichr_assembly != null)
                 {
                     device = create_generichr_instance();
-                    generichrdevice_register_events(global_generichr_instance);
                     didConnect = generichrdevice_findandconnect(device);
                 }
                 else
                     LogHelper.Error("WinBLEGATTManager", "GenericHR Assembly is null!");
                 while (isConnected)
                 {
-                    // Events handle everything, we just need to keep the thread alive to avoid GC errors
+                    // Get Values and Properties
+                    isConnected = generichrdevice_getboolproperty(generichrdevice_boolproperties.IsAlive, device);
+                    HR = generichrdevice_getheartrate(device);
                     Thread.Sleep(10);
                 }
             });
@@ -153,7 +243,6 @@ namespace HRtoVRChat.HRManagers
             VerifyClosedThread();
         }
     }
-    */
 
     public class WinBLEGATTManager : HRManager
     {
@@ -164,26 +253,42 @@ namespace HRtoVRChat.HRManagers
         public bool isDeviceConnected { get; private set; } = false;
 
         private bool LoadedAssemblies = false;
+        
+        // https://stackoverflow.com/a/194223/12968919
+        private static string ProgramFilesx86()
+        {
+            if( 8 == IntPtr.Size 
+                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            {
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            }
 
+            return Environment.GetEnvironmentVariable("ProgramFiles");
+        }
+        
         public void LoadWindowsContracts()
         {
             string programFilesPath = String.Empty;
             string nugetPath = String.Empty;
-            if(Directory.Exists("C:\\Program Files (x86)\\Windows Kits\\10\\References"))
-                programFilesPath = "C:\\Program Files(x86)\\Windows Kits\\10\\References";
+            if(Directory.Exists(Path.Combine(new string[] {ProgramFilesx86(), "Windows Kits", "10", "References"})))
+                programFilesPath = Path.Combine(new string[] {ProgramFilesx86(), "Windows Kits", "10", "References"});
             if (Directory.Exists(Environment.ExpandEnvironmentVariables("%USERPROFILE%\\.nuget\\packages\\microsoft.windows.sdk.contracts")))
                 nugetPath = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\.nuget\\packages\\microsoft.windows.sdk.contracts");
+
+            Assembly.LoadFile(Path.Combine(new[]
+                {ProgramFilesx86(), "Windows Kits", "10", "UnionMetadata", "10.0.19041.0", "Windows.winmd"}));
+            
             if (!string.IsNullOrEmpty(programFilesPath) && !LoadedAssemblies)
             {
                 foreach (string sdkVersion in Directory.GetDirectories(programFilesPath))
                 {
-                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.FoundationContract.winmd"))
-                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.FoundationContract.winmd");
+                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.FoundationContract\\4.0.0.0\\Windows.Foundation.FoundationContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.FoundationContract\\4.0.0.0\\Windows.Foundation.FoundationContract.winmd");
                     else
                         LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.FoundationContract Assembly! Prepare to crash!");
 
-                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.UniversalApiContract.winmd"))
-                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.UniversalApiContract.winmd");
+                    if (File.Exists($"{sdkVersion}\\Windows.Foundation.UniversalApiContract\\10.0.0.0\\Windows.Foundation.UniversalApiContract.winmd"))
+                        Assembly.LoadFrom($"{sdkVersion}\\Windows.Foundation.UniversalApiContract\\10.0.0.0\\Windows.Foundation.UniversalApiContract.winmd");
                     else
                         LogHelper.Error("WinBLEGATTManager", "Failed to Find Windows.Foundation.UniversalApiContract Assembly! Prepare to crash!");
                 }
@@ -300,3 +405,4 @@ namespace HRtoVRChat.HRManagers
         }
     }
 }
+*/

@@ -20,7 +20,8 @@ namespace HRtoVRChat
             try { MelonPreferences.CreateEntry(myCategory, "hrtype", "unknown", "hrtype", "Displays the HRType to use; see documentation."); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "fitbiturl", String.Empty, "fitbiturl", "Websocket URL to Connect to for FitbitHRtoWS."); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "hyperatesessionid", String.Empty, "hyperatesessionid", "SessionId for HypeRate."); } catch (Exception) { }
-            try { MelonPreferences.CreateEntry(myCategory, "pulsoidfeed", String.Empty, "pulsoidfeed", "Feed reference to get Pulsoid Data."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "pulsoidkey", String.Empty, "pulsoidkey", "WebSocket Key for Pulsoid WebSocket feed."); } catch (Exception) { }
+            try { MelonPreferences.CreateEntry(myCategory, "pulsoidwidget", String.Empty, "pulsoidwidget", "Widget Id for Pulsoid."); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "textfilelocation", String.Empty, "textfilelocation", "Location of the text file that contains HR data. (may only contain ints only!)"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "ShowDebug", false, "ShowDebug", "Show additional Debug Information"); } catch (Exception) { }
             try { MelonPreferences.CreateEntry(myCategory, "UIXSupport", true, "UIXSupport", "Add support for the UIExpansionKit mod"); } catch (Exception) { }
@@ -50,6 +51,13 @@ namespace HRtoVRChat
                         break;
                     case "pulsoidfeed":
                         newConfig.pulsoidfeed = mpe.GetValueAsString();
+                        LogHelper.Warn("ConfigHelper", "pulsoidfeed Value is deprecated!");
+                        break;
+                    case "pulsoidkey":
+                        newConfig.pulsoidkey = mpe.GetValueAsString();
+                        break;
+                    case "pulsoidwidget":
+                        newConfig.pulsoidwidget = mpe.GetValueAsString();
                         break;
                     case "textfilelocation":
                         newConfig.textfilelocation = mpe.GetValueAsString();
@@ -83,6 +91,8 @@ namespace HRtoVRChat
             public string fitbitURL = "ws://localhost:8080/";
             public string hyperateSessionId = String.Empty;
             public string pulsoidfeed = String.Empty;
+            public string pulsoidkey = String.Empty;
+            public string pulsoidwidget = String.Empty;
             public string textfilelocation = String.Empty;
             public bool ShowDebug = false;
             public bool AMAPISupport = true;

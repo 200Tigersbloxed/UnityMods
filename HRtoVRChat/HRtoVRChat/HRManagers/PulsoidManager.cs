@@ -1,84 +1,110 @@
 ﻿using System;
-using System.Net;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using System.Threading;
-using UnhollowerBaseLib;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
-namespace HRtoVRChat.HRManagers
+namespace HRtoVRChat.HRManagers;
+
+public class PulsoidManager : HRManager
 {
-    class PulsoidManager : HRManager
+    private WebsocketTemplate wst;
+    private bool shouldUpdate;
+    private Thread _thread;
+    
+    public int HR { get; private set; }
+    public string Timestamp { get; private set; }
+    
+    private bool IsConnected => wst?.IsAlive ?? false;
+    
+    public bool Init(string d1)
     {
-        bool shouldUpdate = false;
-        string pubUrl = String.Empty;
-        static readonly HttpClient client = new HttpClient();
-        int HR = 0;
-
-        private Thread _thread = null;
-
-        bool HRManager.Init(string url)
+        shouldUpdate = true;
+        StartThread(d1);
+        LogHelper.Log("PulsoidManager", "Started Pulsoid!");
+        return true;
+    }
+    
+    void VerifyClosedThread()
+    {
+        if (_thread != null)
         {
-            // Tests to see if the URL is valid
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Method = "HEAD";
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            response.Close();
-            bool requestValid = response.StatusCode == HttpStatusCode.OK;
-            pubUrl = url;
-            shouldUpdate = requestValid;
-            if (requestValid)
-                StartThread();
-            return requestValid;
+            if (_thread.IsAlive)
+                _thread.Abort();
         }
-
-        void VerifyClosedThread()
+    }
+    
+    private async void HandleMessage(string message)
+    {
+        try
         {
-            if (_thread != null)
+            // Parse the message and get the HR or Pong
+            JObject jo = JObject.Parse(message);
+            if (jo["method"] != null)
             {
-                if (_thread.IsAlive)
-                    _thread.Abort();
+                string pingId = jo["pingId"]?.Value<string>();
+                await wst.SendMessage("{\"method\": \"pong\", \"pingId\": \"" + pingId + "\"}");
+            }
+            else
+            {
+                HR = Convert.ToInt32(jo["hr"].Value<string>());
+                Timestamp = jo["timestamp"].Value<string>();
             }
         }
+        catch (Exception) { }
+    }
 
-        void StartThread()
+    private void StartThread(string id)
+    {
+        VerifyClosedThread();
+        _thread = new Thread(async () =>
         {
-            VerifyClosedThread();
-            _thread = new Thread(async () =>
+            bool noerror = true;
+            wst = new WebsocketTemplate("wss://hrproxy.fortnite.lol:2096/hrproxy");
+            try
             {
-                IL2CPP.il2cpp_thread_attach(IL2CPP.il2cpp_domain_get());
+                await wst.Start();
+            }
+            catch (Exception)
+            {
+                LogHelper.Error("PulsoidManager", "Failed to start Pulsoid!");
+                noerror = false;
+            }
+
+            if (noerror)
+            {
+                await wst.SendMessage("{\"reader\": \"pulsoid\", \"identifier\": \"" + id + "\"}");
                 while (shouldUpdate)
                 {
-                    int parsedHR = default(int);
-                    try
+                    if (IsConnected)
                     {
-                        HttpResponseMessage response = await client.GetAsync(pubUrl);
-                        response.EnsureSuccessStatusCode();
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        // Now Parse the Information
-                        JObject jo = null;
-                        try { jo = JObject.Parse(responseBody); } catch (Exception e) { LogHelper.Error("PulsoidManager", "Failed to parse JObject! Exception: " + e); }
-                        if (jo != null)
-                            try { parsedHR = jo["bpm"].Value<int>(); } catch (Exception) { }
+                        string message = await wst.ReceiveMessage();
+                        if (!string.IsNullOrEmpty(message))
+                            HandleMessage(message);
                     }
-                    catch (HttpRequestException e)
-                    {
-                        LogHelper.Error("PulsoidManager", "Failed to get HttpRequest! Exception: " + e);
-                    }
-                    HR = parsedHR;
-                    Thread.Sleep(250);
+                    Thread.Sleep(1);
                 }
-            });
-            _thread.Start();
-        }
-
-        void HRManager.Stop()
-        {
-            shouldUpdate = false;
-            VerifyClosedThread();
-        }
-
-        int HRManager.GetHR() => HR;
-        public bool IsOpen() => shouldUpdate && !string.IsNullOrEmpty(pubUrl);
-        bool HRManager.IsActive() => IsOpen();
+                await Close();
+                LogHelper.Log("PulsoidManager", "Closed Pulsoid");
+            }
+            _thread?.Abort();
+        });
+        _thread.Start();
     }
+
+    private async Task Close()
+    {
+        await wst?.Stop()!;
+    }
+
+    public int GetHR() => HR;
+
+    public void Stop()
+    {
+        shouldUpdate = false;
+        LogHelper.Debug("PulsoidManager", "Sent message to Stop Pulsoid");
+    }
+
+    public bool IsOpen() => IsConnected;
+
+    public bool IsActive() => IsConnected;
 }

@@ -136,7 +136,14 @@ namespace HRtoVRChat
             // Stop MelonCoroutine
             UpdateIENum = false;
             if(activeHRManager != null)
-                MelonCoroutines.Stop(BoopUwU());
+                try
+                {
+                    MelonCoroutines.Stop(BoopUwU()!);
+                }
+                catch (Exception)
+                {
+                    LogHelper.Warn("MainMod", "FunnyName Coroutine is null, you can probably ignore this.");
+                }
             // Stop HR Listener
             StopHRListener();
         }
@@ -176,14 +183,12 @@ namespace HRtoVRChat
                 case "pulsoid":
                     hrt = HRType.Pulsoid;
                     break;
+                case "pulsoidsocket":
+                    hrt = HRType.PulsoidSocket;
+                    break;
                 case "textfile":
                     hrt = HRType.TextFile;
                     break;
-                /*
-                case "win-blegatt":
-                    hrt = HRType.WinBLEGATT;
-                    break;
-                */
             }
 
             return hrt;
@@ -212,18 +217,16 @@ namespace HRtoVRChat
                     break;
                 case HRType.Pulsoid:
                     activeHRManager = new HRManagers.PulsoidManager();
-                    activeHRManager.Init(ConfigHelper.LoadedConfig.pulsoidfeed);
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.pulsoidwidget);
+                    break;
+                case HRType.PulsoidSocket:
+                    activeHRManager = new HRManagers.PulsoidSocketManager();
+                    activeHRManager.Init(ConfigHelper.LoadedConfig.pulsoidkey);
                     break;
                 case HRType.TextFile:
                     activeHRManager = new HRManagers.TextFileManager();
                     activeHRManager.Init(ConfigHelper.LoadedConfig.textfilelocation);
                     break;
-                /*
-                case HRType.WinBLEGATT:
-                    activeHRManager = new HRManagers.WinBLEGATTManager();
-                    activeHRManager.Init("");
-                    break;
-                */
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
                     break;
@@ -360,8 +363,8 @@ namespace HRtoVRChat
             FitbitHRtoWS,
             HypeRate,
             Pulsoid,
+            PulsoidSocket,
             TextFile,
-            WinBLEGATT,
             Unknown
         }
     }
