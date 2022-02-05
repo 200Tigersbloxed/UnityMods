@@ -20,12 +20,13 @@ After installing, you then have to tell HRtoVRChat which service you'll be using
 
 Please also consider contributing to add more support with other Heart Rate Monitors
 
-| Device       | HRType         | Info                                            |
-|--------------|----------------|-------------------------------------------------|
-| FitbitHRtoWS | `fitbithrtows` | https://github.com/200Tigersbloxed/FitbitHRtoWS |
-| HypeRate     | `hyperate`     | https://github.com/200Tigersbloxed/HypeRate.NET |
-| Pulsoid/API  | `pulsoid`      | https://pulsoid.net/                            |
-| TextFile     | `textfile`     | just a text file that's saved on your pc lol    |
+| Device        | HRType          | Info                                                                     |
+|---------------|-----------------|--------------------------------------------------------------------------|
+| FitbitHRtoWS  | `fitbithrtows`  | https://github.com/200Tigersbloxed/FitbitHRtoWS                          |
+| HypeRate      | `hyperate`      | https://www.hyperate.io/                                                 |
+| Pulsoid       | `pulsoid`       | https://pulsoid.net/                                                     |
+| PulsoidSocket | `pulsoidsocket` | https://github.com/pulsoid-oss/pulsoid-api#read_heart_rate_via_websocket |
+| TextFile      | `textfile`      | A .txt file containing only a number                                     |
 
 Take note of HRType, as you'll need to know which you you have to put in the `hrtype` config value.
 
@@ -38,7 +39,8 @@ Below is a table of all the config values and a description. Please update the c
 | `hrtype`            | `(string)` unknown        | The type of service where to get Heart Rate data from.                                  |
 | `fitbiturl`         | `(string)` `String.Empty` | (FitbitHRtoWS Only) The WebSocket URL to connect to.                                    |
 | `hyperatesessionid` | `(string)` `String.Empty` | (HypeRate Only) The HypeRate SessionId to subscribe to.                                 |
-| `pulsoidfeed`       | `(string)` `String.Empty` | (Pulsoid/API Only) The URL to GET from an API. (Designed for Pulsoid)                   |
+| `pulsoidwidget`     | `(string)` `String.Empty` | (Pulsoid Only) The URL to GET from an API.                                              |
+| `pulsoidkey`        | `(string)` `String.Empty` | (PulsoidSocket Only) API Key for Pulsoid's Sockets.                                     |
 | `textfilelocation`  | `(string)` `String.Empty` | (TextFile Only) Location of the text file where HR data should be read from             |
 | `ShowDebug`         | `(bool)` `false`          | Shows Debug logs for debugging HRtoVRChat.                                              |
 | `MaxHR`             | `(double)` 150            | Maximum range for the `HRPercent (float)` parameter                                     |
@@ -63,6 +65,23 @@ Yes, avatar specific setup is required to use this mod properly. Please see the 
 
 If you'd like to test with a public avatar, use [emmVRC](https://thetrueyoshifan.com/mods/emmvrc/)'s avatar search, and search for `HRVRC`, or if you have a way to apply an avatar from an avatarId, the avatar's Id is `avtr_459421d6-d409-40e4-9c7f-218869e4e984`.
 
+## Migration Guide for v1.5.0 (Pulsoid only)
+
+While both HypeRate and Pulsoid were affected by their respective API changes, only Pulsoid needs to migrate. First, the old Pulsoid/API config value is **removed**. Now, there's two ways to migrate.
+
+**Method 1** - Official Sockets *(Not Recommended)*
+
+If you can figure out how to get an `access_token` from Pulsoid, then set the `pulsoidkey` config value to that token, and set `hrtype` to `pulsoidsocket`.
+https://github.com/pulsoid-oss/pulsoid-api#read_heart_rate_via_websocket
+
+**Method 2** - Third-Party Sockets
+
+Set `hrtype` to `pulsoid` and set `pulsoidwidget` to your Pulsoid widgetId.
+
+To get your widgetId, go to your Pulsoid dashboard, go to the Widgets tab, hit Configure on any widget (I recommend the default one), and copy the long string of characters after the last slash in the URL (red/highlighted in attached image)
+
+![widgetId](https://cdn.discordapp.com/attachments/887159486677151814/937249892995326012/unknown.png)
+
 # ATTENTION
 
 It is against the VRChat ToS to modify your client in any way, shape, or form. By using this mod, you understand that your account may be suspended or deleted!
@@ -71,7 +90,7 @@ So please don't complain to me when you get banned for having your Heart Rate sh
 
 # Latest Release
 
-Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.4.3) for the latest release
+Click [here](https://github.com/200Tigersbloxed/UnityMods/releases/tag/hrtvrc-v1.5.0) for the latest release
 
 # Extra Info
 
