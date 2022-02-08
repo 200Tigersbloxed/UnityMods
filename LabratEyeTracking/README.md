@@ -30,7 +30,7 @@ Enables use of the SRanipal SDK to detect if a user has their eyes open or not.
 
 **NOTE:** This *only* works with the SRanipal SDK and aSeeVRClient (Pimax). Any HMDs that have eye tracking, but *don't* use the SRanipal SDK or aSeeVRClient are NOT supported.
 
-Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/LET-v1.3.0
+Latest Release: https://github.com/200Tigersbloxed/UnityMods/releases/tag/LET-v1.3.1
   
 ## Credits
 
