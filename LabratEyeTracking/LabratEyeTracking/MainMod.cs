@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +13,10 @@ namespace LabratEyeTracking
         private GameObject BlinkContainer = null;
         private static Activateblink BlinkComponent = null;
         private Scene currentScene;
+        private string currentScene_name;
+
+        private float widen;
+        private bool needsUpdate = true;
 
         public static Action<Eye, Eye, Eye> OnEyeDataUpdate = (leftEye, rightEye, combinedEye) => { };
 
@@ -51,7 +54,18 @@ namespace LabratEyeTracking
             // Events
             OnEyeDataUpdate += (leftEye, rightEye, combinedEye) =>
             {
-                if (GameHelper.IsGameScene(TryGetScene()))
+                widen = combinedEye.Widen;
+                needsUpdate = true;
+            };
+        }
+
+        public override void OnPreferencesSaved() => ConfigHelper.LoadConfig();
+
+        public override void OnUpdate()
+        {
+            if (needsUpdate)
+            {
+                if (GameHelper.IsGameScene(currentScene_name))
                 {
                     // Verify the EyeTracking is active
                     if (currentEyeTrackingRuntime.EyeTrackingEnabled)
@@ -62,14 +76,14 @@ namespace LabratEyeTracking
                             // set the UI text soon
                             //GameHelper.SetUILabelText(SRanipalHelper.EyeData.verbose_data.combined.eye_data.eye_openness.ToString());
                             // Left and Right are separate, because combined wasn't working for me
-                            if (combinedEye.Widen <= 0.4f)
+                            if (widen <= 0.4f)
                             {
                                 Blinking.UpdateWaitTime(BlinkComponent, Mathf.Infinity);
                                 if (!Blinking.IsBlinking) { Blinking.CloseEyes(BlinkComponent); }
                             }
                             else
                             {
-                                BlinkComponent.waitBetween = 0;
+                                Blinking.UpdateWaitTime(BlinkComponent, 0);
                                 if (Blinking.IsBlinking) { Blinking.OpenEyes(BlinkComponent); }
                             }
                         }
@@ -79,10 +93,9 @@ namespace LabratEyeTracking
                         }
                     }
                 }
-            };
+                needsUpdate = false;
+            }
         }
-
-        public override void OnPreferencesSaved() => ConfigHelper.LoadConfig();
 
         public override void OnApplicationQuit()
         {
@@ -104,24 +117,25 @@ namespace LabratEyeTracking
             LogHelper.Debug("Scene Values Setup!");
         }
 
+        IEnumerator GameSceneLoadWait()
+        {
+            yield return new WaitForSeconds(2);
+            SetupEyeValues();
+            //GameObject newsphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            //newsphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            //newsphere.AddComponent<EyeDriver>();
+        }
+
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             LogHelper.Debug("Scene Loaded.");
+            currentScene_name = scene.name;
             try
             {
                 currentScene = scene;
                 if (GameHelper.IsGameScene(scene))
                 {
-                    /*
-                    Task.Run(() =>
-                    {
-                        Thread.Sleep(2000);
-                        SetupEyeValues();
-                        GameObject newsphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                        newsphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                        newsphere.AddComponent<EyeDriver>();
-                    });
-                    */
+                    MelonCoroutines.Start(GameSceneLoadWait());
                 }
                 else
                 {

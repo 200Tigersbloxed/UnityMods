@@ -44,6 +44,7 @@ namespace LabratEyeTracking
         }
 
         public static bool IsGameScene(Scene scene) => scene.name == "Game";
+        public static bool IsGameScene(string scene) => scene == "Game";
 
         // soon
         /*
