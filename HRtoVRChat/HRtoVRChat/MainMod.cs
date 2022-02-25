@@ -16,7 +16,7 @@ namespace HRtoVRChat
         private bool isRestarting = false;
 
         public static Action<int, int, int, int, bool, bool> OnHRValuesUpdated = (ones, tens, hundreds, HR, isConnected, isActive) => { };
-        public static Action<bool, bool> OnHeartBeatUpdate = (isHeartBeat, shouldStart) => { };
+        public static Action<bool> OnHeartBeatUpdate = isHeartBeat => { };
         public static bool isHeartBeat { get; private set; } = false;
 
         private bool isAppClosing = false;
@@ -77,7 +77,7 @@ namespace HRtoVRChat
             }
             //VRChatUtilityKit.Utilities.NetworkEvents.OnAvatarInstantiated += NetworkEvents_OnAvatarInstantiated;
             EasyAvatarHook.OnAvatarInstantiated += OnAvatarInstantiatedListener;
-            OnHeartBeatUpdate += (hrb, restart) => { if(restart) MelonCoroutines.Start(WaitStartHeartBeat()); };
+            //OnHeartBeatUpdate += (hrb, restart) => { if(restart) MelonCoroutines.Start(WaitStartHeartBeat()); };
             // Start everything else
             Start();
             // based, red-pilled
@@ -126,7 +126,9 @@ namespace HRtoVRChat
         {
             StartHRListener();
             // Start Coroutine
+            RunBoopUwU = true;
             MelonCoroutines.Start(BoopUwU());
+            RunHeartBeat = true;
             MelonCoroutines.Start(HeartBeat());
         }
 
@@ -138,11 +140,14 @@ namespace HRtoVRChat
             if(activeHRManager != null)
                 try
                 {
+                    RunBoopUwU = false;
                     MelonCoroutines.Stop(BoopUwU()!);
+                    RunHeartBeat = false;
+                    MelonCoroutines.Stop(HeartBeat()!);
                 }
                 catch (Exception)
                 {
-                    LogHelper.Warn("MainMod", "FunnyName Coroutine is null, you can probably ignore this.");
+                    LogHelper.Warn("MainMod", "FunnyName or HeartBeat Coroutine is null, you can probably ignore this.");
                 }
             // Stop HR Listener
             StopHRListener();
@@ -248,64 +253,67 @@ namespace HRtoVRChat
         }
 
         // why did i name the ienumerator this and why haven't i changed it
+        private static bool RunBoopUwU;
         IEnumerator BoopUwU()
         {
-            currentHRSplit chs = new currentHRSplit();
-            if (activeHRManager != null)
+            while (RunBoopUwU)
             {
-                int HR = activeHRManager.GetHR();
-                bool isOpen = activeHRManager.IsOpen();
-                bool isActive = activeHRManager.IsActive();
-                // Cast to currentHRSplit
-                chs = intToHRSplit(HR);
-                OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, HR, isOpen, isActive);
-            }
-            yield return new WaitForSeconds(1);
-            if (UpdateIENum) MelonCoroutines.Start(BoopUwU());
-        }
-
-        static IEnumerator WaitStartHeartBeat()
-        {
-            yield return new WaitForSeconds(0.2f);
-            MelonCoroutines.Start(HeartBeat());
-        }
-
-        static IEnumerator HeartBeat()
-        {
-            if(activeHRManager != null)
-            {
-                bool io = activeHRManager.IsOpen();
-                // This should be started by the Melon Update void
-                if (io)
+                currentHRSplit chs = new currentHRSplit();
+                if (activeHRManager != null)
                 {
-                    isHeartBeat = false;
-                    // Get HR
-                    float HR = activeHRManager.GetHR();
-                    if (HR != 0)
-                    {
-                        isHeartBeat = false;
-                        OnHeartBeatUpdate.Invoke(isHeartBeat, false);
-                        // Calculate wait interval
-                        float waitTime = default(float);
-                        // When lowering the HR significantly, this will cause issues with the beat bool
-                        // Dubbed the "Breathing Excersise" bug
-                        // There's a 'temp' fix for it right now, but I'm not sure how it'll hold up
-                        try { waitTime = (1 / ((HR - 0.2f) / 60)); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
-                        yield return new WaitForSeconds(waitTime);
-                        isHeartBeat = true;
-                        OnHeartBeatUpdate.Invoke(isHeartBeat, false);
-                    }
+                    int HR = activeHRManager.GetHR();
+                    bool isOpen = activeHRManager.IsOpen();
+                    bool isActive = activeHRManager.IsActive();
+                    // Cast to currentHRSplit
+                    chs = intToHRSplit(HR);
+                    OnHRValuesUpdated.Invoke(chs.ones, chs.tens, chs.hundreds, HR, isOpen, isActive);
                 }
                 else
+                    OnHRValuesUpdated.Invoke(0, 0, 0, 0, false, false);
+                yield return new WaitForSeconds(1);
+            }
+        }
+
+        private static bool RunHeartBeat;
+        static IEnumerator HeartBeat()
+        {
+            while (RunHeartBeat)
+            {
+                bool didRunProperly = false;
+                if(activeHRManager != null)
                 {
-                    ParamsManager.HRParameter foundParam = ParamsManager.Parameters.Find(x => x.GetParamName() == "isHRBeat");
-                    if (foundParam.GetParamValue() >= 1f)
+                    bool io = activeHRManager.IsOpen();
+                    // This should be started by the Melon Update void
+                    if (io)
                     {
                         isHeartBeat = false;
+                        // Get HR
+                        float HR = activeHRManager.GetHR();
+                        if (HR != 0)
+                        {
+                            didRunProperly = true;
+                            isHeartBeat = false;
+                            OnHeartBeatUpdate.Invoke(isHeartBeat);
+                            // Calculate wait interval
+                            float waitTime = default(float);
+                            // When lowering the HR significantly, this will cause issues with the beat bool
+                            // Dubbed the "Breathing Excersise" bug
+                            // There's a 'temp' fix for it right now, but I'm not sure how it'll hold up
+                            try { waitTime = (1 / ((HR - 0.2f) / 60)); } catch (Exception) { /*Just a Divide by Zero Exception*/ }
+                            yield return new WaitForSeconds(waitTime);
+                            isHeartBeat = true;
+                            OnHeartBeatUpdate.Invoke(isHeartBeat);
+                            yield return new WaitForSeconds(waitTime);
+                        }
                     }
                 }
+                if (!didRunProperly)
+                {
+                    isHeartBeat = false;
+                    yield return new WaitForSeconds(0.02f);
+                }
+                OnHeartBeatUpdate.Invoke(isHeartBeat);
             }
-            OnHeartBeatUpdate.Invoke(isHeartBeat, true);
         }
 
         private currentHRSplit intToHRSplit(int hr)

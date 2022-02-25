@@ -94,7 +94,7 @@ namespace HRtoVRChat
             {
                 SetParamName = parameterName;
                 LogHelper.Debug("ParamsManager", $"BoolParameter with ParameterName: {parameterName} and BoolCheckType of: {bct}, has been created!");
-                MainMod.OnHeartBeatUpdate += (isHeartBeat, shouldRestart) =>
+                MainMod.OnHeartBeatUpdate += isHeartBeat =>
                 {
                     switch (bct)
                     {
