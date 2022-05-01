@@ -2,6 +2,12 @@
 
 *Send your HeartRate into VRChat as a Parameter*
 
+> ___
+> # 🛑 PLEASE READ THIS 🛑
+> ## HRtoVRChat is now entering it's **deprecated** stages, and will soon become **obsolete**!
+> All new releases will no longer come with build artifacts; users will be required to build themselves, and new releases will only occur for **game breaking changes**. Releases from here on out will no longer be updated to the VRCMG (so you can no longer update via. MelonAssistant). Please consider upgrading to [HRtoVRChat_OSC](https://github.com/200Tigersbloxed/HRtoVRChat_OSC)
+> ___
+
 ## Info
 
 HRtoVRChat allows you to send your Heart Rate into VRChat via. Expression Parameters. HRtoVRChat only uses 3 int parameters, as to not require to use a bunch of storage. (see parameters section)
@@ -20,13 +26,17 @@ After installing, you then have to tell HRtoVRChat which service you'll be using
 
 Please also consider contributing to add more support with other Heart Rate Monitors
 
-| Device        | HRType          | Info                                                                     |
-|---------------|-----------------|--------------------------------------------------------------------------|
-| FitbitHRtoWS  | `fitbithrtows`  | https://github.com/200Tigersbloxed/FitbitHRtoWS                          |
-| HypeRate      | `hyperate`      | https://www.hyperate.io/                                                 |
-| Pulsoid       | `pulsoid`       | https://pulsoid.net/                                                     |
-| PulsoidSocket | `pulsoidsocket` | https://github.com/pulsoid-oss/pulsoid-api#read_heart_rate_via_websocket |
-| TextFile      | `textfile`      | A .txt file containing only a number                                     |
+| Device          | HRType          | Info                                                                     |
+|-----------------|-----------------|--------------------------------------------------------------------------|
+| FitbitHRtoWS    | `fitbithrtows`  | https://github.com/200Tigersbloxed/FitbitHRtoWS                          |
+| HypeRate        | `hyperate`      | https://www.hyperate.io/                                                 |
+| Pulsoid/Stromno | `pulsoid`       | https://pulsoid.net/ https://www.stromno.com/                            |
+| PulsoidSocket   | `pulsoidsocket` | https://github.com/pulsoid-oss/pulsoid-api#read_heart_rate_via_websocket |
+| TextFile        | `textfile`      | A .txt file containing only a number                                     |
+| Omnicept        | `omnicept`      | https://www.hp.com/us-en/vr/reverb-g2-vr-headset-omnicept-edition.html   |
+| SDK             | `sdk`           | https://github.com/200Tigersbloxed/HRtoVRChat_OSC/blob/main/SDK.md       |
+
+**[For a full list of all the supported devices, please click here](https://www.fortnite.lol/projects/hrtovrchat#h.mlz9fz56ioey)**
 
 Take note of HRType, as you'll need to know which you you have to put in the `hrtype` config value.
 
