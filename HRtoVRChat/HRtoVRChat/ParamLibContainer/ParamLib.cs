@@ -19,12 +19,11 @@ namespace ParamLib
                 info.Name.Contains("Method") && !info.Name.Contains("PDM") && info.Name.Contains("Public")
                 && info.GetParameters().Length == 1 && info.Name.Contains("Int32") &&
                 info.ReturnType == typeof(void))
-            .First(method => XrefScanner.UsedBy(method).Any(xrefs =>
-                XrefScanner.UsedBy(xrefs.TryResolve()).Any(i => i.TryResolve().Name == "OnEnable")));
+            .First(method => XrefScanner.XrefScan(method).Any(xref => xref.Type == XrefType.Global && xref.ReadAsObject().ToString().Contains("Ran out of free puppet channels!")));
 
         private static readonly MethodInfo SetMethod = typeof(AvatarPlayableController).GetMethods().First(m =>
             m.Name.Contains("Boolean_Int32_Single") && !m.Name.Contains("PDM") &&
-            XrefScanner.UsedBy(m).All(inst => inst.Type == XrefType.Method && inst.TryResolve()?.DeclaringType == typeof(AvatarPlayableController)));
+            XrefScanner.UsedBy(m).Count(inst => inst.Type == XrefType.Method && inst.TryResolve()?.DeclaringType == typeof(AvatarPlayableController)) == 5);
 
         public static void PrioritizeParameter(int paramIndex)
         {

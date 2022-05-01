@@ -5,11 +5,18 @@ using MelonLoader;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using HRtoVRChat.HRManagers;
 
 namespace HRtoVRChat
 {
     public class MainMod : MelonMod
     {
+        public MainMod()
+        {
+            // Load all Libs
+            ManagedLoader.Setup();
+        }
+        
         private static HRType hrType = HRType.Unknown;
         private static HRManager activeHRManager = null;
         private bool UpdateIENum = true;
@@ -194,6 +201,12 @@ namespace HRtoVRChat
                 case "textfile":
                     hrt = HRType.TextFile;
                     break;
+                case "omnicept":
+                    hrt = HRType.Omnicept;
+                    break;
+                case "sdk":
+                    hrt = HRType.SDK;
+                    break;
             }
 
             return hrt;
@@ -231,6 +244,14 @@ namespace HRtoVRChat
                 case HRType.TextFile:
                     activeHRManager = new HRManagers.TextFileManager();
                     activeHRManager.Init(ConfigHelper.LoadedConfig.textfilelocation);
+                    break;
+                case HRType.Omnicept:
+                    activeHRManager = new OmniceptManager();
+                    activeHRManager.Init(String.Empty);
+                    break;
+                case HRType.SDK:
+                    activeHRManager = new SDKManager();
+                    activeHRManager.Init("127.0.0.1:9000");
                     break;
                 default:
                     LogHelper.Warn("MainMod", "No hrType was selected! Please see README if you think this is an error!");
@@ -373,6 +394,8 @@ namespace HRtoVRChat
             Pulsoid,
             PulsoidSocket,
             TextFile,
+            Omnicept,
+            SDK,
             Unknown
         }
     }
